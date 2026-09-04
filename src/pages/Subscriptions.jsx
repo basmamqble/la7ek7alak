@@ -274,7 +274,7 @@ export default function Subscriptions() {
                               className="p-1.5 bg-white border border-[#EFECE6] rounded-lg text-xs font-semibold focus:outline-none focus:border-[#8E5439]"
                             >
                               <option value="active">نشط</option>
-                              <option value="expiring_soon">وينتهي قريباً</option>
+                              <option value="expiring_soon">ينتهي قريباً</option>
                               <option value="expired">منتهي</option>
                             </select>
                           ) : (
@@ -283,7 +283,7 @@ export default function Subscriptions() {
                                 <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 font-bold rounded-lg text-[10px]">نشط</span>
                               )}
                               {sub.status === 'expiring_soon' && (
-                                <span className="px-2.5 py-1 bg-amber-50 text-amber-700 font-bold rounded-lg text-[10px]">وينتهي قريباً</span>
+                                <span className="px-2.5 py-1 bg-amber-50 text-amber-700 font-bold rounded-lg text-[10px]">ينتهي قريباً</span>
                               )}
                               {sub.status === 'expired' && (
                                 <span className="px-2.5 py-1 bg-red-50 text-red-700 font-bold rounded-lg text-[10px]">منتهي</span>
