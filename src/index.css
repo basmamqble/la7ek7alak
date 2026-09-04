@@ -1,0 +1,14 @@
+@import "tailwindcss";
+/* تحديد لون التظليل (Highlight) بدرجة بني مناسبة للثيم */
+::selection {
+  background-color: #8E5439;
+  color: #ffffff;
+}
+
+/* ضبط مؤشر اليد للأزرار وعناصر التفاعل بشكل عام */
+button, 
+a, 
+select, 
+input[type="submit"] {
+  cursor: pointer;
+}
