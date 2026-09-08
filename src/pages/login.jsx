@@ -41,7 +41,7 @@ export default function Login() {
           <img 
             src="/logo.jpg" 
             alt="لحّق حالك" 
-            className="w-35 h-35 object-contain mx-auto mb-4"
+            className="w-45 h-45 object-contain mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-brand-primary">لوحة تحكم الأدمن</h1>
           <p className="text-xs text-brand-secondary font-bold mt-1">لحّق حالك - إدارة المنصة</p>
