@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Trash2, AlertTriangle, CheckCircle, ShieldAlert } from 'lucide-react';
-import API from '../api/axios'; // عدلي المسار بحسب موقع الملف لديكِ
+import { Search, Trash2, ShieldAlert } from 'lucide-react';
+import API from '../api/axios';
 
 // بيانات بلاغات وهمية افتراضية مطابقة للصورة
 const defaultReports = [
@@ -87,19 +87,19 @@ export default function Reports() {
   });
 
   return (
-    <div className="space-y-6" dir="rtl">
+    <div className="space-y-6 font-sans text-right" dir="rtl">
       {/* الهيدر العلوي */}
       <div>
-        <h1 className="text-xl font-bold text-[#8E5439]">
+        <h1 className="text-2xl font-bold text-brand-primary">
           عرض قائمة البلاغات (Reports List)
         </h1>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-brand-body/70 mt-1">
           مراجعة البلاغات والشكاوى الواردة من الزبائن حول العروض والـ Stories
         </p>
       </div>
 
       {/* شريط الفلترة وإجمالي البلاغات */}
-      <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-[#EFECE6] flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-brand-card p-4 rounded-2xl border border-brand-border flex flex-wrap items-center justify-between gap-3 shadow-xs">
         <div className="flex flex-wrap items-center gap-3 flex-1">
           {/* حقل البحث */}
           <div className="relative flex-1 min-w-[220px]">
@@ -108,16 +108,16 @@ export default function Reports() {
               placeholder="ابحث باسم الزبون أو المتجر المبلغ عنه..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pr-10 pl-4 py-2 bg-white border border-[#EFECE6] rounded-xl text-xs text-gray-700 focus:outline-none focus:border-[#8E5439] transition"
+              className="w-full pr-10 pl-4 py-2 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-primary placeholder:text-brand-body/40 focus:outline-none focus:border-brand-primary transition"
             />
-            <Search size={15} className="absolute right-3.5 top-2.5 text-gray-400" />
+            <Search size={15} className="absolute right-3.5 top-2.5 text-brand-body/40" />
           </div>
 
           {/* فلتر سبب البلاغ */}
           <select
             value={selectedReason}
             onChange={(e) => setSelectedReason(e.target.value)}
-            className="px-3 py-2 bg-white border border-[#EFECE6] rounded-xl text-xs text-gray-600 focus:outline-none focus:border-[#8E5439]"
+            className="px-3 py-2 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-body focus:outline-none focus:border-brand-primary cursor-pointer"
           >
             <option value="ALL">سبب البلاغ: الكل</option>
             {reasonsList.map((reason, idx) => (
@@ -136,11 +136,11 @@ export default function Reports() {
       </div>
 
       {/* جدول عرض البلاغات */}
-      <div className="bg-white rounded-2xl border border-[#EFECE6] shadow-sm overflow-hidden">
+      <div className="bg-brand-card rounded-2xl border border-brand-border shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-right border-collapse">
             <thead>
-              <tr className="bg-[#FAF8F5] text-gray-700 font-bold border-b border-[#EFECE6]">
+              <tr className="bg-brand-bg text-brand-primary font-bold border-b border-brand-border">
                 <th className="p-4">الزبون (الـمُبَلِّغ)</th>
                 <th className="p-4">المتجر (الـمُشْتَكَى عليه)</th>
                 <th className="p-4">عنوان الـ Story</th>
@@ -149,32 +149,32 @@ export default function Reports() {
                 <th className="p-4 text-center">الإجراءات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#EFECE6]">
+            <tbody className="divide-y divide-brand-border">
               {filteredReports.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="text-center py-12 text-gray-400">
+                  <td colSpan="6" className="text-center py-12 text-brand-body/50">
                     لا توجد بلاغات مسجلة حالياً.
                   </td>
                 </tr>
               ) : (
                 filteredReports.map((report) => (
-                  <tr key={report.id} className="hover:bg-gray-50/60 transition">
+                  <tr key={report.id} className="hover:bg-brand-bg/50 transition">
                     {/* بيانات الزبون */}
                     <td className="p-4">
-                      <div className="font-bold text-[#2D1B13]">{report.reporterName}</div>
-                      <div className="text-[11px] text-gray-400 dir-ltr text-right">
+                      <div className="font-bold text-brand-primary">{report.reporterName}</div>
+                      <div className="text-[11px] text-brand-body/60 dir-ltr text-right">
                         {report.reporterPhone}
                       </div>
                     </td>
 
                     {/* بيانات المتجر */}
                     <td className="p-4">
-                      <div className="font-bold text-[#8E5439]">{report.storeName}</div>
-                      <div className="text-[11px] text-gray-400">{report.storeLocation}</div>
+                      <div className="font-bold text-brand-secondary">{report.storeName}</div>
+                      <div className="text-[11px] text-brand-body/60">{report.storeLocation}</div>
                     </td>
 
                     {/* عنوان العرض */}
-                    <td className="p-4 font-semibold text-gray-800">{report.storyTitle}</td>
+                    <td className="p-4 font-semibold text-brand-body">{report.storyTitle}</td>
 
                     {/* سبب البلاغ */}
                     <td className="p-4">
@@ -185,15 +185,15 @@ export default function Reports() {
 
                     {/* التاريخ والوقت */}
                     <td className="p-4">
-                      <div className="font-bold text-gray-700">{report.date}</div>
-                      <div className="text-[11px] text-gray-400">{report.time}</div>
+                      <div className="font-bold text-brand-primary">{report.date}</div>
+                      <div className="text-[11px] text-brand-body/60">{report.time}</div>
                     </td>
 
                     {/* إجراءات الأدمن */}
                     <td className="p-4 text-center">
                       <button
                         onClick={() => handleDeleteReport(report.id)}
-                        className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition border border-transparent hover:border-rose-100"
+                        className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition border border-transparent hover:border-rose-100 cursor-pointer"
                         title="حذف البلاغ"
                       >
                         <Trash2 size={16} />

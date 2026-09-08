@@ -1,14 +1,26 @@
 @import "tailwindcss";
-/* تحديد لون التظليل (Highlight) بدرجة بني مناسبة للثيم */
-::selection {
-  background-color: #8E5439;
-  color: #ffffff;
+@import "./App.css";
+
+@theme {
+  /* درجات الأزرق الكحلي والسماوي */
+  --color-brand-primary: #17244E;
+  --color-brand-primary-hover: #013C58;
+  --color-brand-primary-soft: #A8E8F9;
+
+  /* درجات البرتقالي والذهبي */
+  --color-brand-secondary: #F58B1F;
+  --color-brand-secondary-hover: #F5A201;
+  --color-brand-secondary-soft: #FFBA42;
+
+  /* الخلفيات والحدود والنصوص */
+  --color-brand-bg: #F4FAFC;
+  --color-brand-card: #FFFFFF;
+  --color-brand-border: #E0F2F7;
+  --color-brand-title: #0F172A;
+  --color-brand-body: #475569;
 }
 
-/* ضبط مؤشر اليد للأزرار وعناصر التفاعل بشكل عام */
-button, 
-a, 
-select, 
-input[type="submit"] {
-  cursor: pointer;
+body {
+  background-color: var(--color-brand-bg);
+  color: var(--color-brand-body);
 }

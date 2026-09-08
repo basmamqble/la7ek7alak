@@ -13,31 +13,44 @@ const data = [
 
 export default function AnalyticsChart() {
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+    <div className="bg-brand-card p-6 rounded-2xl shadow-xs border border-brand-border space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-bold text-[#8E5439] flex items-center gap-2">
+        <h2 className="text-sm font-bold text-brand-title flex items-center gap-2">
           <span>📈</span> إحصائيات تفاعل الزبائن مع الـ Stories (آخر 7 أيام)
         </h2>
       </div>
 
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 10, right: 20, left: 20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#C86238" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#C86238" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="var(--color-brand-secondary, #E86B32)" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="var(--color-brand-secondary, #E86B32)" stopOpacity={0.0} />
               </linearGradient>
             </defs>
-            <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#888' }} />
+            <XAxis 
+              dataKey="name" 
+              interval={0} 
+              tickLine={false} 
+              axisLine={false} 
+              tick={{ fontSize: 11, fill: '#888' }} 
+            />
             <YAxis hide domain={[0, 'dataMax + 10']} />
             <Tooltip 
-              contentStyle={{ borderRadius: '10px', backgroundColor: '#fff', borderColor: '#eee', fontSize: '12px' }}
+              contentStyle={{ 
+                borderRadius: '12px', 
+                backgroundColor: 'var(--color-brand-card, #ffffff)', 
+                borderColor: 'var(--color-brand-border, #EFECE6)', 
+                color: 'var(--color-brand-title, #013C58)',
+                fontSize: '12px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+              }}
             />
             <Area 
               type="monotone" 
               dataKey="value" 
-              stroke="#C86238" 
+              stroke="var(--color-brand-secondary, #E86B32)" 
               strokeWidth={3} 
               fillOpacity={1} 
               fill="url(#colorValue)" 

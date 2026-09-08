@@ -42,11 +42,21 @@ export default function Merchants() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-brand-bg min-h-screen p-2 font-sans" dir="rtl">
+      {/* عنوان الصفحة الرئيسي */}
+      <div>
+        <h1 className="text-2xl font-bold text-brand-primary">إدارة التجار والمتاجر</h1>
+        <p className="text-xs text-brand-body/70 mt-1">
+          إضافة حسابات التجار الجدد وإدارة بيانات المتاجر المعتمدة في منصة لحّق حالك
+        </p>
+      </div>
+
+      {/* نموذج الإضافة وجدول العرض */}
       <MerchantForm 
         onMerchantAdded={handleMerchantAdded} 
         refreshMerchants={fetchMerchants} 
       />
+      
       <MerchantTable 
         merchants={merchants} 
         loading={loading} 

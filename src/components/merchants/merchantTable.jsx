@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Store, MapPin, Loader2, Edit, Phone, Lock, Eye, EyeOff, X, CheckCircle } from 'lucide-react';
+import { Store, MapPin, Loader2, Edit, Phone, Lock, Eye, EyeOff, X, CheckCircle, KeyRound } from 'lucide-react';
 import API from '../../api/axios';
+import ResetPasswordModal from '../common/ResetPasswordModal';
 
 const CATEGORY_MAP = {
   1: 'ملابس وموضة',
@@ -24,10 +25,13 @@ const CITY_MAP = {
 export default function MerchantTable({ merchants, refreshMerchants, loading }) {
   const [updatingId, setUpdatingId] = useState(null);
 
+  // حالة التحكم بمودال إعادة تعيين كلمة المرور
+  const [selectedUserForReset, setSelectedUserForReset] = useState(null);
+
   // حالات مودال التعديل
   const [selectedMerchant, setSelectedMerchant] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // لإظهار/إخفاء كلمة المرور
+  const [showPassword, setShowPassword] = useState(false);
   const [editFormData, setEditFormData] = useState({
     name: '',
     phone: '',
@@ -62,9 +66,9 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
     setEditFormData({
       name: merchantName,
       phone: item.phone || item.phoneNumber || '',
-      password:'', // عرض كلمة السر إن وجدت بالباك إند
+      password: '',
     });
-    setShowPassword(true); // إظهار الكلمة تلقائياً للأدمن عند الفتح
+    setShowPassword(true);
     setIsEditModalOpen(true);
   };
 
@@ -144,16 +148,16 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#EFECE6]">
+    <div className="bg-brand-card rounded-2xl p-6 shadow-xs border border-brand-border">
       <div className="flex items-center gap-2 mb-4">
-        <Store size={18} className="text-[#8E5439]" />
-        <h2 className="text-base font-bold text-[#8E5439]">قائمة التجار المسجلين</h2>
+        <Store size={18} className="text-brand-secondary" />
+        <h2 className="text-base font-bold text-brand-title">قائمة التجار المسجلين</h2>
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-right border-collapse">
           <thead>
-            <tr className="bg-[#FAF6F0] text-[#2D1B13] text-xs font-semibold border-b border-[#EFECE6]">
+            <tr className="bg-brand-bg text-brand-title text-xs font-semibold border-b border-brand-border">
               <th className="py-3 px-4">اسم المتجر</th>
               <th className="py-3 px-4">اسم التاجر</th>
               <th className="py-3 px-4">رقم الهاتف</th>
@@ -163,19 +167,19 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
               <th className="py-3 px-4 text-center">الإجراءات</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 text-xs text-gray-700">
+          <tbody className="divide-y divide-brand-border text-xs text-brand-body">
             {loading ? (
               <tr>
-                <td colSpan="7" className="py-8 text-center text-gray-400">
+                <td colSpan="7" className="py-8 text-center text-brand-body/60">
                   <div className="flex items-center justify-center gap-2">
-                    <Loader2 size={16} className="animate-spin text-[#8E5439]" />
+                    <Loader2 size={16} className="animate-spin text-brand-secondary" />
                     <span>جاري تحميل بيانات التجار...</span>
                   </div>
                 </td>
               </tr>
             ) : safeMerchants.length === 0 ? (
               <tr>
-                <td colSpan="7" className="py-8 text-center text-gray-400">
+                <td colSpan="7" className="py-8 text-center text-brand-body/60">
                   لا يوجد تجار مسجلون حالياً.
                 </td>
               </tr>
@@ -193,17 +197,17 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
                 const isCurrentlyUpdating = updatingId === itemId;
 
                 return (
-                  <tr key={itemId} className="hover:bg-gray-50/50 transition">
-                    <td className="py-3.5 px-4 font-medium text-[#2D1B13]">{storeName}</td>
-                    <td className="py-3.5 px-4 text-gray-600">{merchantName}</td>
-                    <td className="py-3.5 px-4 text-gray-600">{phone}</td>
-                    <td className="py-3.5 px-4 text-gray-600">
+                  <tr key={itemId} className="hover:bg-brand-bg/50 transition">
+                    <td className="py-3.5 px-4 font-medium text-brand-title">{storeName}</td>
+                    <td className="py-3.5 px-4 text-brand-body">{merchantName}</td>
+                    <td className="py-3.5 px-4 text-brand-body">{phone}</td>
+                    <td className="py-3.5 px-4 text-brand-body">
                       <span className="flex items-center gap-1">
-                        <MapPin size={13} className="text-[#8E5439]" />
+                        <MapPin size={13} className="text-brand-secondary" />
                         {location}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-gray-600">{category}</td>
+                    <td className="py-3.5 px-4 text-brand-body">{category}</td>
                     <td className="py-3.5 px-4 text-center">
                       <button
                         type="button"
@@ -212,8 +216,8 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
                         title="اضغط لتغيير الحالة"
                         className={`inline-flex items-center justify-center gap-1.5 px-4 py-1 rounded-full text-xs font-bold transition duration-200 cursor-pointer disabled:opacity-50 ${
                           isActive
-                            ? 'bg-[#E5F7ED] text-[#1E7242] hover:bg-[#d5f2e1]'
-                            : 'bg-[#FCEAEB] text-[#A92A32] hover:bg-[#faaaaf]'
+                            ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                            : 'bg-rose-50 text-rose-700 hover:bg-rose-100'
                         }`}
                       >
                         {isCurrentlyUpdating && <Loader2 size={12} className="animate-spin" />}
@@ -221,13 +225,26 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
                       </button>
                     </td>
                     <td className="py-3.5 px-4 text-center">
-                      <button
-                        onClick={() => handleOpenEdit(item)}
-                        className="px-3 py-1.5 bg-[#F5EBE6] text-[#8E5439] hover:bg-[#8E5439] hover:text-white rounded-lg transition font-medium flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
-                      >
-                        <Edit size={14} />
-                        <span>تعديل</span>
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        {/* زر تعديل البيانات */}
+                        <button
+                          onClick={() => handleOpenEdit(item)}
+                          className="px-3 py-1.5 bg-brand-secondary/10 text-brand-secondary hover:bg-brand-secondary hover:text-white rounded-lg transition font-medium flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Edit size={14} />
+                          <span>تعديل</span>
+                        </button>
+
+                        {/* زر إعادة تعيين كلمة المرور */}
+                        <button
+                          onClick={() => setSelectedUserForReset(item)}
+                          className="px-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white rounded-lg transition font-medium flex items-center justify-center gap-1.5 cursor-pointer"
+                          title="تغيير كلمة المرور"
+                        >
+                          <KeyRound size={14} />
+                          <span>كلمة المرور</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -237,19 +254,29 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
         </table>
       </div>
 
+      {/* مودال تغيير كلمة المرور */}
+      {selectedUserForReset && (
+        <ResetPasswordModal
+          userId={selectedUserForReset.id || selectedUserForReset._id}
+          userPhone={selectedUserForReset.phone || selectedUserForReset.phoneNumber}
+          userName={selectedUserForReset.fullName || selectedUserForReset.name || selectedUserForReset.merchantName}
+          onClose={() => setSelectedUserForReset(null)}
+        />
+      )}
+
       {/* مودال تعديل التاجر */}
       {isEditModalOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl border border-gray-100 relative text-right">
+          <div className="bg-brand-card rounded-2xl w-full max-w-md p-6 shadow-xl border border-brand-border relative text-right">
             <button
               onClick={() => setIsEditModalOpen(false)}
-              className="absolute left-4 top-4 text-gray-400 hover:text-gray-600 cursor-pointer"
+              className="absolute left-4 top-4 text-brand-body/60 hover:text-brand-title cursor-pointer"
             >
               <X size={18} />
             </button>
 
-            <h2 className="text-base font-bold text-[#2D1B13] mb-4 flex items-center gap-2">
-              <Store size={18} className="text-[#8E5439]" />
+            <h2 className="text-base font-bold text-brand-title mb-4 flex items-center gap-2">
+              <Store size={18} className="text-brand-secondary" />
               تعديل بيانات التاجر
             </h2>
 
@@ -257,8 +284,8 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
               <div
                 className={`p-3 rounded-xl mb-4 text-xs font-medium flex items-center gap-2 ${
                   feedback.type === 'success'
-                    ? 'bg-green-50 text-green-700 border border-green-200'
-                    : 'bg-red-50 text-red-600 border border-red-200'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-rose-50 text-rose-700 border border-rose-200'
                 }`}
               >
                 {feedback.type === 'success' && <CheckCircle size={16} />}
@@ -268,43 +295,43 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
 
             <form onSubmit={handleSaveMerchant} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[#2D1B13] mb-1.5">اسم التاجر</label>
+                <label className="block text-xs font-semibold text-brand-title mb-1.5">اسم التاجر</label>
                 <input
                   type="text"
                   value={editFormData.name}
                   onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
                   required
-                  className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#7E361B] text-xs"
+                  className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#2D1B13] mb-1.5">رقم الهاتف</label>
+                <label className="block text-xs font-semibold text-brand-title mb-1.5">رقم الهاتف</label>
                 <div className="relative">
                   <input
                     type="text"
                     value={editFormData.phone}
                     onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
-                    className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#7E361B] text-xs"
+                    className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
                   />
-                  <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-body/50" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#2D1B13] mb-1.5">كلمة المرور</label>
+                <label className="block text-xs font-semibold text-brand-title mb-1.5">كلمة المرور</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={editFormData.password}
                     onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
                     placeholder="كلمة المرور الخاصة بالتاجر"
-                    className="w-full text-right pr-3.5 pl-10 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#7E361B] text-xs font-mono"
+                    className="w-full text-right pr-3.5 pl-10 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card font-mono"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#8E5439] transition cursor-pointer"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-body/50 hover:text-brand-secondary transition cursor-pointer"
                     title={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
                   >
                     {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
@@ -316,14 +343,14 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-200 transition cursor-pointer"
+                  className="px-4 py-2 bg-brand-bg text-brand-body rounded-xl text-xs font-medium hover:bg-brand-border/60 transition cursor-pointer"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 bg-[#2D1B13] text-white rounded-xl text-xs font-medium hover:bg-[#1F120C] transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2 bg-brand-title text-white rounded-xl text-xs font-medium hover:bg-brand-title/90 transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting && <Loader2 size={14} className="animate-spin" />}
                   حفظ التعديلات

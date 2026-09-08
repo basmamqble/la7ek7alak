@@ -76,13 +76,13 @@ export default function Customers() {
       {/* العنوان وزر الإضافة */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-[#8E5439]">إدارة الزبائن</h1>
-          <p className="text-xs text-gray-500 mt-1">عرض وتعديل بيانات حسابات الزبائن المسجلين</p>
+          <h1 className="text-xl font-bold text-brand-title">إدارة الزبائن</h1>
+          <p className="text-xs text-brand-body mt-1">عرض وتعديل بيانات حسابات الزبائن المسجلين</p>
         </div>
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-[#8E5439] hover:bg-[#72412B] text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-brand-secondary hover:bg-brand-secondary-hover text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer"
         >
           <UserPlus size={16} />
           <span>إضافة زبون جديد</span>
@@ -96,7 +96,7 @@ export default function Customers() {
           placeholder="بحث بالاسم، البريد، أو الرقم..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pr-10 pl-4 py-2.5 bg-white border border-[#EFECE6] rounded-xl text-xs text-gray-700 focus:outline-none focus:border-[#8E5439] transition"
+          className="w-full pr-10 pl-4 py-2.5 bg-brand-card border border-brand-border rounded-xl text-xs text-brand-title focus:outline-none focus:border-brand-secondary transition"
         />
         <Search size={16} className="absolute right-3.5 top-3 text-gray-400" />
       </div>
@@ -110,63 +110,66 @@ export default function Customers() {
 
       {/* Modal إضافة زبون */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 space-y-4">
-            <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="font-bold text-sm text-[#2D1B13]">إضافة زبون جديد</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-brand-card w-full max-w-md rounded-2xl shadow-lg border border-brand-border p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-brand-border pb-3">
+              <h3 className="font-bold text-sm text-brand-title">إضافة زبون جديد</h3>
+              <button 
+                onClick={() => setIsModalOpen(false)} 
+                className="text-gray-400 hover:text-brand-title transition cursor-pointer"
+              >
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleAddCustomer} className="space-y-3">
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">اسم الزبون</label>
+                <label className="block text-xs font-bold text-brand-title mb-1">اسم الزبون</label>
                 <input
                   type="text"
                   required
                   placeholder="مثال: خالد محمد"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#8E5439]"
+                  className="w-full px-3 py-2 border border-brand-border rounded-xl text-xs bg-brand-card text-brand-title focus:outline-none focus:border-brand-secondary transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">البريد الإلكتروني</label>
+                <label className="block text-xs font-bold text-brand-title mb-1">البريد الإلكتروني</label>
                 <input
                   type="email"
                   required
                   placeholder="example@domain.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#8E5439]"
+                  className="w-full px-3 py-2 border border-brand-border rounded-xl text-xs bg-brand-card text-brand-title focus:outline-none focus:border-brand-secondary transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">رقم الهاتف</label>
+                <label className="block text-xs font-bold text-brand-title mb-1">رقم الهاتف</label>
                 <input
                   type="text"
                   required
                   placeholder="059XXXXXXX"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#8E5439]"
+                  className="w-full px-3 py-2 border border-brand-border rounded-xl text-xs bg-brand-card text-brand-title focus:outline-none focus:border-brand-secondary transition"
                 />
               </div>
 
               <div className="flex gap-2 pt-3">
                 <button
                   type="submit"
-                  className="flex-1 bg-[#8E5439] text-white py-2 rounded-xl text-xs font-bold hover:bg-[#72412B] transition"
+                  className="flex-1 bg-brand-primary text-white py-2 rounded-xl text-xs font-bold hover:bg-brand-primary-hover transition cursor-pointer"
                 >
                   حفظ الزبون
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 bg-gray-100 text-gray-600 py-2 rounded-xl text-xs font-bold hover:bg-gray-200 transition"
+                  className="px-4 bg-brand-bg text-brand-title py-2 rounded-xl text-xs font-bold hover:bg-brand-border/60 transition cursor-pointer"
                 >
                   إلغاء
                 </button>

@@ -123,34 +123,31 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
   return (
     <>
       {success && (
-        <div className="bg-[#E6F4EA] text-[#1E8E3E] border border-[#C6E7CE] px-4 py-3 rounded-xl mb-4 text-xs font-semibold flex items-center justify-center gap-2 shadow-sm transition-all duration-300">
-          <CheckCircle2 size={16} className="text-[#1E8E3E]" />
+        <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-3 rounded-xl mb-4 text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-all duration-300">
+          <CheckCircle2 size={16} className="text-emerald-600" />
           <span>تم إنشاء حساب التاجر بنجاح وإرسال بيانات الاعتماد له!</span>
         </div>
       )}
 
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#EFECE6] mb-6">
+      <div className="bg-brand-card rounded-2xl p-6 shadow-xs border border-brand-border mb-6">
         <div className="flex items-center gap-2 mb-6">
-          <Plus size={18} className="text-[#8E5439]" />
-          <h2 className="text-base font-bold text-[#8E5439]">إضافة تاجر جديد</h2>
+          <Plus size={18} className="text-brand-secondary" />
+          <h2 className="text-base font-bold text-brand-title">إضافة تاجر جديد</h2>
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 border border-red-200 text-xs p-3 rounded-xl mb-4 text-center font-medium">
+          <div className="bg-rose-50 text-rose-600 border border-rose-200 text-xs p-3 rounded-xl mb-4 text-center font-medium">
             {error}
           </div>
         )}
 
-        {/* تم إغلاق التعبئة التلقائية عبر autoComplete="off" */}
         <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
-          
-          {/* حقول مخفية للتمويه على المتصفح حتى لا يملأ الحقول الحقيقية تلقائياً */}
           <input type="text" style={{ display: 'none' }} aria-hidden="true" />
           <input type="password" style={{ display: 'none' }} aria-hidden="true" />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#2D1B13] mb-1.5">اسم التاجر</label>
+              <label className="block text-xs font-semibold text-brand-title mb-1.5">اسم التاجر</label>
               <input
                 type="text"
                 name="merchantName"
@@ -158,12 +155,12 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
                 onChange={handleChange}
                 autoComplete="off"
                 required
-                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#7E361B] text-xs text-[#2D1B13]"
+                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#2D1B13] mb-1.5">البريد الإلكتروني</label>
+              <label className="block text-xs font-semibold text-brand-title mb-1.5">البريد الإلكتروني</label>
               <input
                 type="email"
                 name="email"
@@ -171,12 +168,12 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
                 onChange={handleChange}
                 autoComplete="none"
                 required
-                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#7E361B] text-xs text-[#2D1B13]"
+                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#2D1B13] mb-1.5">كلمة المرور المبدئية</label>
+              <label className="block text-xs font-semibold text-brand-title mb-1.5">كلمة المرور المبدئية</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -185,12 +182,12 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
                   onChange={handleChange}
                   autoComplete="new-password"
                   required
-                  className="w-full text-right px-3.5 py-2.5 pl-10 rounded-xl border border-gray-200 focus:outline-none focus:border-[#7E361B] text-xs text-[#2D1B13]"
+                  className="w-full text-right px-3.5 py-2.5 pl-10 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#7E361B] focus:outline-none"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-body/60 hover:text-brand-secondary focus:outline-none"
                 >
                   {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
                 </button>
@@ -200,7 +197,7 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#2D1B13] mb-1.5">اسم المتجر</label>
+              <label className="block text-xs font-semibold text-brand-title mb-1.5">اسم المتجر</label>
               <input
                 type="text"
                 name="storeName"
@@ -208,30 +205,30 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
                 onChange={handleChange}
                 autoComplete="off"
                 required
-                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#7E361B] text-xs text-[#2D1B13]"
+                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#2D1B13] mb-1.5">رقم التواصل</label>
+              <label className="block text-xs font-semibold text-brand-title mb-1.5">رقم التواصل</label>
               <input
                 type="text"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
                 autoComplete="off"
-                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#7E361B] text-xs text-[#2D1B13]"
+                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#2D1B13] mb-1.5">التصنيف</label>
+              <label className="block text-xs font-semibold text-brand-title mb-1.5">التصنيف</label>
               <select
                 name="categoryId"
                 value={formData.categoryId}
                 onChange={handleChange}
                 required
-                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#7E361B] text-xs text-[#2D1B13] bg-white"
+                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
               >
                 <option value="" disabled hidden>اختر التصنيف</option>
                 <option value="1">ملابس وموضة</option>
@@ -246,13 +243,13 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div>
-              <label className="block text-xs font-semibold text-[#2D1B13] mb-1.5">الموقع الجغرافي</label>
+              <label className="block text-xs font-semibold text-brand-title mb-1.5">الموقع الجغرافي</label>
               <select
                 name="cityId"
                 value={formData.cityId}
                 onChange={handleChange}
                 required
-                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#7E361B] text-xs text-[#2D1B13] bg-white"
+                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
               >
                 <option value="" disabled hidden>اختر موقع المتجر</option>
                 <option value="1">شمال غزة</option>
@@ -269,7 +266,7 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-[#2D1B13] hover:bg-[#1F120C] text-white px-6 py-2.5 rounded-xl text-xs font-semibold transition duration-200 shadow-sm flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="bg-brand-title hover:bg-brand-title/90 text-white px-6 py-2.5 rounded-xl text-xs font-semibold transition duration-200 shadow-xs flex items-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {loading && <Loader2 size={14} className="animate-spin" />}
                 إنشاء حساب التاجر

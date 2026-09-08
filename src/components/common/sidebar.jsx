@@ -11,9 +11,8 @@ import {
   LogOut, 
   X, 
   Bell,
-  CreditCard // 👈 1. تم استيراد أيقونة الاشتراكات والوصولات
+  CreditCard
 } from 'lucide-react';
-import logo from '../../assets/logo.png';
 
 export default function Sidebar({ onClose }) {
   const navigate = useNavigate();
@@ -24,65 +23,87 @@ export default function Sidebar({ onClose }) {
     { title: 'إدارة الزبائن', path: '/customers', icon: Users },
     { title: 'إدارة الـ Stories الحية', path: '/stories', icon: Flame },
     { title: 'إدارة الأقسام والمدن', path: '/categories', icon: FolderTree },
-    { title: 'الاشتراكات والوصولات', path: '/subscriptions', icon: CreditCard }, // 👈 2. تمت إضافة خيار الاشتراكات
+    { title: 'الاشتراكات والوصولات', path: '/subscriptions', icon: CreditCard },
     { title: 'قائمة البلاغات', path: '/reports', icon: AlertTriangle },
     { title: 'الإشعارات', path: '/notifications', icon: Bell },
     { title: 'الإعدادات', path: '/settings', icon: Settings },
   ];
 
   const handleLogout = () => {
-    localStorage.clear();
-    navigate('/', { replace: true });
+    if (window.confirm('هل أنت تأكد من رغبتك في تسجيل الخروج؟')) {
+      localStorage.clear();
+      navigate('/', { replace: true });
+    }
   };
 
   return (
-    <aside className="w-64 bg-[#2D1B13] text-white flex flex-col justify-between h-full z-20 shadow-lg">
-      <div>
-        <div className="p-5 border-b border-[#3D210F] flex items-center justify-between text-right">
-          <div className="flex items-center gap-3">
-            <img src={logo} alt="لحّق حالك" className="w-10 h-10 object-contain" />
-            <div className="flex flex-col">
-              <h1 className="text-base font-bold text-white leading-tight">لحّق حالك</h1>
-              <span className="text-[11px] text-[#C6BCAD] mt-0.5">لوحة تحكم الأدمن</span>
-            </div>
+    <aside className="w-64 bg-brand-primary text-white flex flex-col justify-between h-full z-20 shadow-lg select-none">
+      <div className="flex flex-col h-full overflow-hidden">
+        {/* الهيدر الخاص بالشريط الجانبي */}
+        <div className="p-5 border-b border-brand-primary-hover/40 flex items-center justify-between relative shrink-0">
+          <div className="w-full flex flex-col items-center text-center">
+            <h1 className="text-base font-bold text-white leading-tight">لحّق حالك</h1>
+            <span className="text-[11px] text-brand-primary-soft/80 mt-0.5 font-medium">لوحة تحكم الأدمن</span>
           </div>
           {onClose && (
-            <button onClick={onClose} className="p-1 text-gray-400 hover:text-white">
-              <X size={20} />
+            <button 
+              onClick={onClose} 
+              type="button"
+              className="absolute left-4 p-1.5 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition cursor-pointer"
+              title="إغلاق القائمة"
+            >
+              <X size={18} />
             </button>
           )}
         </div>
 
-        <nav className="p-4 space-y-1.5">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                onClick={onClose} 
-                className={({ isActive }) =>
-                  `w-full text-right py-2.5 px-3.5 rounded-xl text-xs font-medium flex items-center gap-2.5 transition ${
-                    isActive
-                      ? 'bg-[#7E361B] text-white font-bold shadow-sm'
-                      : 'text-[#C6BCAD] hover:bg-[#3D210F] hover:text-white'
-                  }`
-                }
-              >
-                <Icon size={16} />
-                <span>{item.title}</span>
-              </NavLink>
-            );
-          })}
+        {/* قائمة التنقل - تم تعديل الاتجاه والشريط ليكون يمينياً ومنسقاً */}
+        <nav 
+          dir="ltr" 
+          className="p-4 space-y-1.5 overflow-y-auto flex-1 custom-scrollbar"
+        >
+          <div dir="rtl" className="space-y-1.5">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={onClose} 
+                  className={({ isActive }) =>
+                    `w-full text-right py-2.5 px-3.5 rounded-xl text-xs font-medium flex items-center justify-between transition group relative ${
+                      isActive
+                        ? 'bg-brand-secondary text-white font-bold shadow-xs'
+                        : 'text-brand-primary-soft/90 hover:bg-brand-primary-hover hover:text-white'
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <div className="flex items-center gap-2.5">
+                        <Icon size={17} className={`${isActive ? 'text-white' : 'text-brand-primary-soft/80 group-hover:text-white'} transition-colors`} />
+                        <span>{item.title}</span>
+                      </div>
+                      {isActive && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              );
+            })}
+          </div>
         </nav>
       </div>
 
-      <div className="p-4 border-t border-[#3D210F]">
+      {/* زر تسجيل الخروج السفلي بألوان الهوية */}
+      <div className="p-4 border-t border-brand-primary-hover/40 shrink-0 bg-brand-primary">
         <button
           onClick={handleLogout}
-          className="w-full text-right py-2.5 px-3.5 rounded-xl text-xs font-medium text-red-300 hover:bg-[#3D210F] hover:text-red-200 flex items-center gap-2.5 transition cursor-pointer"
+          type="button"
+          className="w-full text-right py-2.5 px-3.5 rounded-xl text-xs font-bold bg-brand-primary-soft/20 text-brand-primary-soft hover:bg-brand-secondary hover:text-white flex items-center gap-2.5 transition cursor-pointer border border-brand-primary-soft/30"
         >
-          <LogOut size={16} />
+          <LogOut size={16} className="rotate-180" />
           <span>تسجيل الخروج</span>
         </button>
       </div>

@@ -33,23 +33,23 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4" dir="rtl">
-      <div className="w-full max-w-[420px] bg-white rounded-[28px] shadow-sm border border-[#EFECE6] p-8 md:p-10">
+    <div className="min-h-screen bg-brand-bg flex items-center justify-center p-4 font-sans" dir="rtl">
+      <div className="w-full max-w-[420px] bg-brand-card rounded-[28px] shadow-sm border border-brand-border p-8 md:p-10">
         
         {/* Logo */}
         <div className="text-center mb-6">
           <img 
-            src="/logo.png" 
+            src="/logo.jpg" 
             alt="لحّق حالك" 
-            className="w-16 h-16 object-contain mx-auto mb-4"
+            className="w-35 h-35 object-contain mx-auto mb-4"
           />
-          <h1 className="text-2xl font-bold text-[#2D1B13]">لوحة تحكم الأدمن</h1>
-          <p className="text-xs text-[#8E5439] mt-1 font-medium">لحّق حالك - إدارة المنصة</p>
+          <h1 className="text-2xl font-bold text-brand-primary">لوحة تحكم الأدمن</h1>
+          <p className="text-xs text-brand-secondary font-bold mt-1">لحّق حالك - إدارة المنصة</p>
         </div>
 
         {/* عرض رسالة الخطأ */}
         {error && (
-          <div className="bg-red-50 text-red-600 border border-red-200 text-xs p-3 rounded-xl mb-4 text-center font-medium">
+          <div className="bg-rose-50 text-rose-600 border border-rose-200 text-xs p-3 rounded-xl mb-4 text-center font-medium">
             {error}
           </div>
         )}
@@ -57,7 +57,7 @@ export default function Login() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5 mt-8">
           <div>
-            <label className="block text-xs font-bold text-[#2D1B13] mb-2 text-right">
+            <label className="block text-xs font-bold text-brand-primary mb-2 text-right">
               البريد الإلكتروني للأدمن
             </label>
             <input
@@ -66,12 +66,12 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@gmail.com"
               required
-              className="w-full text-right px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:border-[#2D1B13] text-xs text-[#2D1B13] placeholder-gray-300 transition"
+              className="w-full text-right px-4 py-3 rounded-2xl border border-brand-border focus:outline-none focus:border-brand-primary text-xs text-brand-primary placeholder-gray-400 transition bg-brand-bg/30"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#2D1B13] mb-2 text-right">
+            <label className="block text-xs font-bold text-brand-primary mb-2 text-right">
               كلمة المرور
             </label>
             <div className="relative">
@@ -80,12 +80,12 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full text-right px-4 py-3 pl-10 rounded-2xl border border-gray-200 focus:outline-none focus:border-[#2D1B13] text-xs text-[#2D1B13] transition"
+                className="w-full text-right px-4 py-3 pl-10 rounded-2xl border border-brand-border focus:outline-none focus:border-brand-primary text-xs text-brand-primary transition bg-brand-bg/30"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#2D1B13] focus:outline-none"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-primary focus:outline-none transition"
               >
                 {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
               </button>
@@ -95,7 +95,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-4 bg-[#2D1B13] hover:bg-[#1F120C] text-white py-3.5 rounded-2xl text-xs font-bold transition duration-200 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+            className="w-full mt-4 bg-brand-primary hover:bg-brand-primary-hover text-white py-3.5 rounded-2xl text-xs font-bold transition duration-200 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             {loading && <Loader2 size={16} className="animate-spin" />}
             تسجيل الدخول للوحة التحكم

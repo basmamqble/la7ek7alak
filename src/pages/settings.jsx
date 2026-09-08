@@ -20,8 +20,8 @@ import {
 } from 'lucide-react';
 import API from '../api/axios';
 
-// استدعاء الشعار الافتراضي الخاص بالمنصة من مجلد الأصول (قم بتعديل المسار حسب المجلد لديك)
-import defaultLogo from '../assets/logo.png';
+// استدعاء الشعار الافتراضي الخاص بالمنصة من مجلد الأصول
+import defaultLogo from '../assets/logo.jpg';
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('general');
@@ -31,7 +31,7 @@ export default function Settings() {
   // States
   const [platformName, setPlatformName] = useState('لَحق حالك - Lahaq Halak');
   const [supportEmail, setSupportEmail] = useState('support@lahaqhalak.com');
-  const [logoPreview, setLogoPreview] = useState(defaultLogo); // تعيين الشعار الافتراضي
+  const [logoPreview, setLogoPreview] = useState(defaultLogo);
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
 
   const [currency, setCurrency] = useState('ILS');
@@ -156,22 +156,22 @@ export default function Settings() {
   ];
 
   return (
-    <div className="space-y-[#1f130d] pb-28 max-w-6xl mx-auto" dir="rtl">
+    <div className="space-y-6 pb-28 max-w-6xl mx-auto font-sans text-right" dir="rtl">
       {/* الهيدر العلوي */}
-      <div className="bg-white p-6 rounded-2xl border border-[#EFECE6] shadow-xs flex items-center justify-between">
+      <div className="bg-brand-card p-6 rounded-2xl border border-brand-border shadow-xs flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="p-3.5 bg-[#8E5439]/10 text-[#8E5439] rounded-2xl">
+          <div className="p-3.5 bg-brand-secondary-soft text-brand-primary rounded-2xl">
             <Globe size={26} />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-[#2D1B13]">إعدادات المنظومة</h1>
-            <p className="text-xs text-gray-500 mt-1">التحكم بهوية منصة "لَحق حالك"، الحسابات، والنظام المالي والسياسات</p>
+            <h1 className="text-xl font-bold text-brand-primary">إعدادات المنظومة</h1>
+            <p className="text-xs text-brand-body/70 mt-1">التحكم بهوية منصة "لَحق حالك"، الحسابات، والنظام المالي والسياسات</p>
           </div>
         </div>
       </div>
 
       {/* شريط التبويبات Tabs */}
-      <div className="flex items-center gap-2 bg-[#FAF8F5] p-2 rounded-2xl border border-[#EFECE6] overflow-x-auto">
+      <div className="flex items-center gap-2 bg-brand-card p-2 rounded-2xl border border-brand-border overflow-x-auto shadow-xs">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -182,11 +182,11 @@ export default function Settings() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                 isActive
-                  ? 'bg-[#2D1B13] text-white shadow-sm'
-                  : 'text-gray-600 hover:bg-white hover:text-[#8E5439]'
+                  ? 'bg-brand-secondary text-white shadow-sm'
+                  : 'text-brand-body hover:bg-brand-bg hover:text-brand-primary'
               }`}
             >
-              <div className={`p-1.5 rounded-lg ${isActive ? 'bg-white/10 text-white' : 'text-gray-500'}`}>
+              <div className={`p-1.5 rounded-lg ${isActive ? 'bg-white/10 text-white' : 'text-brand-body/60'}`}>
                 <Icon size={16} />
               </div>
               <span>{tab.label}</span>
@@ -199,50 +199,50 @@ export default function Settings() {
       <form onSubmit={handleSave}>
         {/* 1. العام والهوية */}
         {activeTab === 'general' && (
-          <div className="bg-white rounded-2xl border border-[#EFECE6] p-6 shadow-xs space-y-8">
-            <div className="flex items-center gap-3 border-b border-[#EFECE6] pb-4">
-              <div className="p-2 bg-[#8E5439]/10 text-[#8E5439] rounded-xl">
+          <div className="bg-brand-card rounded-2xl border border-brand-border p-6 shadow-xs space-y-8">
+            <div className="flex items-center gap-3 border-b border-brand-border pb-4">
+              <div className="p-2 bg-brand-secondary-soft text-brand-primary rounded-xl">
                 <Globe size={20} />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-[#2D1B13]">الهوية البصرية والبيانات الأساسية</h2>
-                <p className="text-[11px] text-gray-400">تحديث المظهر الأساسي للمنصة ومعلومات الدعم</p>
+                <h2 className="text-sm font-bold text-brand-primary">الهوية البصرية والبيانات الأساسية</h2>
+                <p className="text-[11px] text-brand-body/60">تحديث المظهر الأساسي للمنصة ومعلومات الدعم</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-700">اسم المنصة الرسمي</label>
+                <label className="block text-xs font-bold text-brand-primary">اسم المنصة الرسمي</label>
                 <div className="relative">
                   <input
                     type="text"
                     value={platformName}
                     onChange={handleInputChange(setPlatformName)}
-                    className="w-full pr-10 pl-4 py-3 bg-[#FAF8F5] border border-[#EFECE6] rounded-xl text-xs focus:outline-none focus:border-[#8E5439] focus:bg-white transition"
+                    className="w-full pr-10 pl-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-primary focus:outline-none focus:border-brand-primary transition"
                   />
-                  <Globe size={16} className="absolute right-3.5 top-3.5 text-gray-400" />
+                  <Globe size={16} className="absolute right-3.5 top-3.5 text-brand-body/40" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-700">بريد الدعم الفني</label>
+                <label className="block text-xs font-bold text-brand-primary">بريد الدعم الفني</label>
                 <div className="relative">
                   <input
                     type="email"
                     value={supportEmail}
                     onChange={handleInputChange(setSupportEmail)}
-                    className="w-full pr-10 pl-4 py-3 bg-[#FAF8F5] border border-[#EFECE6] rounded-xl text-xs focus:outline-none focus:border-[#8E5439] focus:bg-white text-left dir-ltr transition"
+                    className="w-full pr-10 pl-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-primary focus:outline-none focus:border-brand-primary text-left dir-ltr transition"
                   />
-                  <Mail size={16} className="absolute right-3.5 top-3.5 text-gray-400" />
+                  <Mail size={16} className="absolute right-3.5 top-3.5 text-brand-body/40" />
                 </div>
               </div>
             </div>
 
             {/* رفع الشعار مع إظهار الشعار الافتراضي للمنصة */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-gray-700">شعار التطبيق والمنصة</label>
-              <div className="flex flex-col sm:flex-row items-center gap-6 p-5 bg-[#FAF8F5] border border-dashed border-[#DCD6CD] rounded-2xl">
-                <div className="w-24 h-24 rounded-2xl border border-[#EFECE6] bg-white flex items-center justify-center overflow-hidden shadow-xs relative group shrink-0">
+              <label className="block text-xs font-bold text-brand-primary">شعار التطبيق والمنصة</label>
+              <div className="flex flex-col sm:flex-row items-center gap-6 p-5 bg-brand-bg border border-dashed border-brand-border rounded-2xl">
+                <div className="w-24 h-24 rounded-2xl border border-brand-border bg-brand-card flex items-center justify-center overflow-hidden shadow-xs relative group shrink-0">
                   {logoPreview ? (
                     <>
                       <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2" />
@@ -256,35 +256,35 @@ export default function Settings() {
                       </button>
                     </>
                   ) : (
-                    <span className="text-[11px] text-gray-400 font-medium">لا يوجد شعار</span>
+                    <span className="text-[11px] text-brand-body/50 font-medium">لا يوجد شعار</span>
                   )}
                 </div>
 
                 <div className="space-y-2 text-center sm:text-right">
-                  <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#2D1B13] hover:bg-[#1f130d] text-white rounded-xl text-xs font-bold cursor-pointer transition shadow-xs">
+                  <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-secondary hover:bg-brand-primary text-white rounded-xl text-xs font-bold cursor-pointer transition shadow-xs">
                     <Upload size={15} />
                     <span>رفع شعار جديد</span>
                     <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
                   </label>
-                  <p className="text-[11px] text-gray-400">الصيغ المدعومة: PNG, SVG, JPG (الحد الأقصى 2MB)</p>
+                  <p className="text-[11px] text-brand-body/60">الصيغ المدعومة: PNG, SVG, JPG (الحد الأقصى 2MB)</p>
                 </div>
               </div>
             </div>
 
             {/* قسم تفعيل وضع الصيانة المؤقت */}
             <div className="pt-2">
-              <div className="bg-[#FFFDF9] border border-[#F5EFE6] rounded-2xl p-5 transition-all shadow-xs">
+              <div className="bg-brand-bg border border-brand-border rounded-2xl p-5 transition-all shadow-xs">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-[#8E5439]/10 text-[#8E5439] rounded-xl shrink-0">
+                    <div className="p-3 bg-brand-secondary-soft text-brand-primary rounded-xl shrink-0">
                       <Wrench size={22} />
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-[#2D1B13]">تفعيل وضع الصيانة المؤقت</h4>
-                        <Lock size={14} className="text-[#8E5439]" />
+                        <h4 className="text-sm font-bold text-brand-primary">تفعيل وضع الصيانة المؤقت</h4>
+                        <Lock size={14} className="text-brand-secondary" />
                       </div>
-                      <p className="text-xs text-gray-500 leading-relaxed">
+                      <p className="text-xs text-brand-body/70 leading-relaxed">
                         إيقاف وصول الزبائن والتجار للتطبيق مؤقتاً لأغراض التحديث والصيانة.
                       </p>
                     </div>
@@ -297,7 +297,7 @@ export default function Settings() {
                       setIsDirty(true);
                     }}
                     className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      isMaintenanceMode ? 'bg-[#8E5439]' : 'bg-gray-200'
+                      isMaintenanceMode ? 'bg-brand-secondary' : 'bg-brand-border'
                     }`}
                   >
                     <span
@@ -314,57 +314,57 @@ export default function Settings() {
 
         {/* 2. الإعدادات المالية */}
         {activeTab === 'financial' && (
-          <div className="bg-white rounded-2xl border border-[#EFECE6] p-6 shadow-xs space-y-8">
-            <div className="flex items-center gap-3 border-b border-[#EFECE6] pb-4">
-              <div className="p-2 bg-[#8E5439]/10 text-[#8E5439] rounded-xl">
+          <div className="bg-brand-card rounded-2xl border border-brand-border p-6 shadow-xs space-y-8">
+            <div className="flex items-center gap-3 border-b border-brand-border pb-4">
+              <div className="p-2 bg-brand-secondary-soft text-brand-primary rounded-xl">
                 <DollarSign size={20} />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-[#2D1B13]">إعدادات العملة والعمولات</h2>
-                <p className="text-[11px] text-gray-400">ضبط العمولات المستقطعة والضرائب المضافة والعملة</p>
+                <h2 className="text-sm font-bold text-brand-primary">إعدادات العملة والعمولات</h2>
+                <p className="text-[11px] text-brand-body/60">ضبط العمولات المستقطعة والضرائب المضافة والعملة</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-700">العملة الافتراضية</label>
+                <label className="block text-xs font-bold text-brand-primary">العملة الافتراضية</label>
                 <div className="relative">
                   <select
                     value={currency}
                     onChange={handleInputChange(setCurrency)}
-                    className="w-full pr-10 pl-4 py-3 bg-[#FAF8F5] border border-[#EFECE6] rounded-xl text-xs focus:outline-none focus:border-[#8E5439] focus:bg-white transition appearance-none cursor-pointer"
+                    className="w-full pr-10 pl-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-primary focus:outline-none focus:border-brand-primary transition appearance-none cursor-pointer"
                   >
                     <option value="ILS">شيكل إسرائيلي (₪)</option>
                     <option value="USD">دولار أمريكي ($)</option>
                     <option value="JOD">دينار أردني (JOD)</option>
                   </select>
-                  <Coins size={16} className="absolute right-3.5 top-3.5 text-gray-400 pointer-events-none" />
+                  <Coins size={16} className="absolute right-3.5 top-3.5 text-brand-body/40 pointer-events-none" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-700">عمولة المنصة (%)</label>
+                <label className="block text-xs font-bold text-brand-primary">عمولة المنصة (%)</label>
                 <div className="relative">
                   <input
                     type="number"
                     value={commissionRate}
                     onChange={handleInputChange(setCommissionRate)}
-                    className="w-full pr-10 pl-4 py-3 bg-[#FAF8F5] border border-[#EFECE6] rounded-xl text-xs focus:outline-none focus:border-[#8E5439] focus:bg-white transition"
+                    className="w-full pr-10 pl-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-primary focus:outline-none focus:border-brand-primary transition"
                   />
-                  <Percent size={16} className="absolute right-3.5 top-3.5 text-gray-400" />
+                  <Percent size={16} className="absolute right-3.5 top-3.5 text-brand-body/40" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-700">الضريبة المضافة (%)</label>
+                <label className="block text-xs font-bold text-brand-primary">الضريبة المضافة (%)</label>
                 <div className="relative">
                   <input
                     type="number"
                     value={taxRate}
                     onChange={handleInputChange(setTaxRate)}
-                    className="w-full pr-10 pl-4 py-3 bg-[#FAF8F5] border border-[#EFECE6] rounded-xl text-xs focus:outline-none focus:border-[#8E5439] focus:bg-white transition"
+                    className="w-full pr-10 pl-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-primary focus:outline-none focus:border-brand-primary transition"
                   />
-                  <Percent size={16} className="absolute right-3.5 top-3.5 text-gray-400" />
+                  <Percent size={16} className="absolute right-3.5 top-3.5 text-brand-body/40" />
                 </div>
               </div>
             </div>
@@ -373,65 +373,65 @@ export default function Settings() {
 
         {/* 3. مواقع التواصل الاجتماعي */}
         {activeTab === 'social' && (
-          <div className="bg-white rounded-2xl border border-[#EFECE6] p-6 shadow-xs space-y-8">
-            <div className="flex items-center gap-3 border-b border-[#EFECE6] pb-4">
-              <div className="p-2 bg-[#8E5439]/10 text-[#8E5439] rounded-xl">
+          <div className="bg-brand-card rounded-2xl border border-brand-border p-6 shadow-xs space-y-8">
+            <div className="flex items-center gap-3 border-b border-brand-border pb-4">
+              <div className="p-2 bg-brand-secondary-soft text-brand-primary rounded-xl">
                 <Share2 size={20} />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-[#2D1B13]">روابط التواصل الرسمية</h2>
-                <p className="text-[11px] text-gray-400">إدارة حسابات المنصة التي تظهر للمستخدمين داخل التطبيق</p>
+                <h2 className="text-sm font-bold text-brand-primary">روابط التواصل الرسمية</h2>
+                <p className="text-[11px] text-brand-body/60">إدارة حسابات المنصة التي تظهر للمستخدمين داخل التطبيق</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-700">صفحة فيسبوك</label>
+                <label className="block text-xs font-bold text-brand-primary">صفحة فيسبوك</label>
                 <div className="relative">
                   <input
                     type="text"
                     value={facebook}
                     onChange={handleInputChange(setFacebook)}
-                    className="w-full pr-10 pl-4 py-3 bg-[#FAF8F5] border border-[#EFECE6] rounded-xl text-xs focus:outline-none focus:border-[#8E5439] focus:bg-white text-left dir-ltr transition"
+                    className="w-full pr-10 pl-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-primary focus:outline-none focus:border-brand-primary text-left dir-ltr transition"
                   />
                   <Share2 size={16} className="absolute right-3.5 top-3.5 text-blue-600" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-700">حساب انستغرام</label>
+                <label className="block text-xs font-bold text-brand-primary">حساب انستغرام</label>
                 <div className="relative">
                   <input
                     type="text"
                     value={instagram}
                     onChange={handleInputChange(setInstagram)}
-                    className="w-full pr-10 pl-4 py-3 bg-[#FAF8F5] border border-[#EFECE6] rounded-xl text-xs focus:outline-none focus:border-[#8E5439] focus:bg-white text-left dir-ltr transition"
+                    className="w-full pr-10 pl-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-primary focus:outline-none focus:border-brand-primary text-left dir-ltr transition"
                   />
                   <Camera size={16} className="absolute right-3.5 top-3.5 text-pink-600" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-700">حساب لينكد إن (LinkedIn)</label>
+                <label className="block text-xs font-bold text-brand-primary">حساب لينكد إن (LinkedIn)</label>
                 <div className="relative">
                   <input
                     type="text"
                     value={linkedin}
                     onChange={handleInputChange(setLinkedin)}
-                    className="w-full pr-10 pl-4 py-3 bg-[#FAF8F5] border border-[#EFECE6] rounded-xl text-xs focus:outline-none focus:border-[#8E5439] focus:bg-white text-left dir-ltr transition"
+                    className="w-full pr-10 pl-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-primary focus:outline-none focus:border-brand-primary text-left dir-ltr transition"
                   />
                   <Briefcase size={16} className="absolute right-3.5 top-3.5 text-blue-700" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-700">رقم الواتساب الرسمي</label>
+                <label className="block text-xs font-bold text-brand-primary">رقم الواتساب الرسمي</label>
                 <div className="relative">
                   <input
                     type="text"
                     value={whatsapp}
                     onChange={handleInputChange(setWhatsapp)}
-                    className="w-full pr-10 pl-4 py-3 bg-[#FAF8F5] border border-[#EFECE6] rounded-xl text-xs focus:outline-none focus:border-[#8E5439] focus:bg-white text-left dir-ltr transition"
+                    className="w-full pr-10 pl-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-primary focus:outline-none focus:border-brand-primary text-left dir-ltr transition"
                   />
                   <Phone size={16} className="absolute right-3.5 top-3.5 text-emerald-600" />
                 </div>
@@ -442,22 +442,22 @@ export default function Settings() {
 
         {/* 4. الحماية والسياسات */}
         {activeTab === 'safety' && (
-          <div className="bg-white rounded-2xl border border-[#EFECE6] p-6 shadow-xs space-y-8">
-            <div className="flex items-center gap-3 border-b border-[#EFECE6] pb-4">
-              <div className="p-2 bg-[#8E5439]/10 text-[#8E5439] rounded-xl">
+          <div className="bg-brand-card rounded-2xl border border-brand-border p-6 shadow-xs space-y-8">
+            <div className="flex items-center gap-3 border-b border-brand-border pb-4">
+              <div className="p-2 bg-brand-secondary-soft text-brand-primary rounded-xl">
                 <ShieldAlert size={20} />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-[#2D1B13]">إعدادات الحماية وسياسة الاستخدام</h2>
-                <p className="text-[11px] text-gray-400">إدارة معايير الحظر التلقائي والنصوص القانونية للمنصة</p>
+                <h2 className="text-sm font-bold text-brand-primary">إعدادات الحماية وسياسة الاستخدام</h2>
+                <p className="text-[11px] text-brand-body/60">إدارة معايير الحظر التلقائي والنصوص القانونية للمنصة</p>
               </div>
             </div>
 
             {/* الحظر التلقائي */}
-            <div className="flex items-center justify-between bg-[#FAF8F5] p-5 rounded-2xl border border-[#EFECE6]">
+            <div className="flex items-center justify-between bg-brand-bg p-5 rounded-2xl border border-brand-border">
               <div className="space-y-1">
-                <p className="text-xs font-bold text-[#2D1B13]">حظر الـ Story تلقائياً عند كثرة البلاغات</p>
-                <p className="text-[11px] text-gray-500">إخفاء العرض فوراً من التطبيق بمجرد وصوله للحد المسموح من الشكاوى</p>
+                <p className="text-xs font-bold text-brand-primary">حظر الـ Story تلقائياً عند كثرة البلاغات</p>
+                <p className="text-[11px] text-brand-body/70">إخفاء العرض فوراً من التطبيق بمجرد وصوله للحد المسموح من الشكاوى</p>
               </div>
 
               <button
@@ -467,7 +467,7 @@ export default function Settings() {
                   setIsDirty(true);
                 }}
                 className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                  autoBlockStory ? 'bg-[#8E5439]' : 'bg-gray-200'
+                  autoBlockStory ? 'bg-brand-secondary' : 'bg-brand-border'
                 }`}
               >
                 <span
@@ -479,39 +479,39 @@ export default function Settings() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-gray-700">الحد الأقصى للبلاغات قبل الحظر التلقائي</label>
+              <label className="block text-xs font-bold text-brand-primary">الحد الأقصى للبلاغات قبل الحظر التلقائي</label>
               <input
                 type="number"
                 value={maxReports}
                 onChange={handleInputChange(setMaxReports)}
-                className="w-full md:w-64 px-4 py-3 bg-[#FAF8F5] border border-[#EFECE6] rounded-xl text-xs focus:outline-none focus:border-[#8E5439] focus:bg-white transition"
+                className="w-full md:w-64 px-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-primary focus:outline-none focus:border-brand-primary transition"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 mb-1">
-                  <FileText size={15} className="text-[#8E5439]" />
-                  <label className="block text-xs font-bold text-gray-700">نص سياسة الخصوصية</label>
+                  <FileText size={15} className="text-brand-secondary" />
+                  <label className="block text-xs font-bold text-brand-primary">نص سياسة الخصوصية</label>
                 </div>
                 <textarea
                   rows={9}
                   value={privacyPolicy}
                   onChange={handleInputChange(setPrivacyPolicy)}
-                  className="w-full p-4 bg-[#FAF8F5] border border-[#EFECE6] rounded-xl text-xs focus:outline-none focus:border-[#8E5439] focus:bg-white transition leading-relaxed"
+                  className="w-full p-4 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-primary focus:outline-none focus:border-brand-primary transition leading-relaxed"
                 />
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2 mb-1">
-                  <FileText size={15} className="text-[#8E5439]" />
-                  <label className="block text-xs font-bold text-gray-700">الشروط والأحكام</label>
+                  <FileText size={15} className="text-brand-secondary" />
+                  <label className="block text-xs font-bold text-brand-primary">الشروط والأحكام</label>
                 </div>
                 <textarea
                   rows={9}
                   value={termsOfService}
                   onChange={handleInputChange(setTermsOfService)}
-                  className="w-full p-4 bg-[#FAF8F5] border border-[#EFECE6] rounded-xl text-xs focus:outline-none focus:border-[#8E5439] focus:bg-white transition leading-relaxed"
+                  className="w-full p-4 bg-brand-bg border border-brand-border rounded-xl text-xs text-brand-primary focus:outline-none focus:border-brand-primary transition leading-relaxed"
                 />
               </div>
             </div>
@@ -520,15 +520,15 @@ export default function Settings() {
 
         {/* الشريط السفلي العائم للحفظ Sticky Floating Save Bar */}
         {isDirty && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#2D1B13] text-white px-6 py-3.5 rounded-2xl shadow-xl border border-[#3e271c] flex items-center gap-6 z-50">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-brand-primary text-white px-6 py-3.5 rounded-2xl shadow-xl border border-brand-border flex items-center gap-6 z-50">
             <div className="flex items-center gap-2 text-xs">
-              <AlertCircle size={18} className="text-[#E0A884]" />
+              <AlertCircle size={18} className="text-brand-secondary" />
               <span>توجد تغييرات جديدة غير محفوظة</span>
             </div>
             <button
               type="submit"
               disabled={saving}
-              className="px-5 py-2.5 bg-[#8E5439] hover:bg-[#77432b] text-white rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-sm"
+              className="px-5 py-2.5 bg-brand-secondary hover:bg-brand-secondary/90 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-xs"
             >
               <Save size={15} />
               <span>{saving ? 'جاري الحفظ...' : 'حفظ التغيرات الآن'}</span>
