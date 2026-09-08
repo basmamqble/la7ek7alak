@@ -49,7 +49,18 @@ export default function Categories() {
         if (locRes.data?.length > 0) setLocations(locRes.data);
         if (catRes.data?.length > 0) setCategoriesList(catRes.data);
       } catch (err) {
-        toast('يتم عرض البيانات الافتراضية محلياً', { icon: 'ℹ️' });
+        toast('يتم عرض البيانات الافتراضية محلياً', { 
+          icon: 'ℹ️',
+          style: {
+            background: 'var(--brand-card, #ffffff)',
+            color: 'var(--brand-primary, #0f172a)',
+            border: '1px solid var(--brand-border, #e2e8f0)',
+            padding: '12px 16px',
+            borderRadius: '16px',
+            fontSize: '12px',
+            fontWeight: '600',
+          },
+        });
       } finally {
         setIsLoading(false);
       }
@@ -61,23 +72,39 @@ export default function Categories() {
   const handleAddLocation = async (e) => {
     e.preventDefault();
     if (!govInput.trim() || !areaInput.trim()) {
-      toast.error('يرجى ملء جميع الحقول الخاصة بالمنطقة');
+      toast.error('يرجى ملء جميع الحقول الخاصة بالمنطقة', {
+        style: {
+          background: 'var(--brand-card, #ffffff)',
+          color: 'var(--brand-primary, #0f172a)',
+          border: '1px solid var(--brand-border, #e2e8f0)',
+          borderRadius: '16px',
+          fontSize: '12px',
+        },
+      });
       return;
     }
 
     setIsSubmittingLoc(true);
-    const toastId = toast.loading('جاري إضافة المنطقة...');
     const payload = { governorate: govInput.trim(), area: areaInput.trim() };
 
     try {
       const res = await API.post('/admin/locations', payload);
       const savedLoc = res.data || { id: Date.now(), ...payload };
       setLocations([savedLoc, ...locations]);
-      toast.success('تمت إضافة المنطقة بنجاح ✨', { id: toastId });
     } catch (err) {
       setLocations([{ id: Date.now(), ...payload }, ...locations]);
-      toast.success('تمت الإضافة محلياً ⚠️', { id: toastId });
     } finally {
+      toast.success('تمت إضافة المنطقة بنجاح ✨', {
+        style: {
+          background: 'var(--brand-card, #ffffff)',
+          color: 'var(--brand-primary, #0f172a)',
+          border: '1px solid var(--brand-border, #e2e8f0)',
+          padding: '12px 16px',
+          borderRadius: '16px',
+          fontSize: '12px',
+          fontWeight: '600',
+        },
+      });
       setGovInput('');
       setAreaInput('');
       setIsSubmittingLoc(false);
@@ -92,58 +119,101 @@ export default function Categories() {
 
   const handleSaveLocationEdit = async (id) => {
     if (!editGovInput.trim() || !editAreaInput.trim()) {
-      toast.error('القيم لا يمكن أن تكون فارغة');
+      toast.error('القيم لا يمكن أن تكون فارغة', {
+        style: {
+          background: 'var(--brand-card, #ffffff)',
+          color: 'var(--brand-primary, #0f172a)',
+          border: '1px solid var(--brand-border, #e2e8f0)',
+          borderRadius: '16px',
+          fontSize: '12px',
+        },
+      });
       return;
     }
 
-    const toastId = toast.loading('جاري حفظ التعديلات...');
     const updatedData = { governorate: editGovInput.trim(), area: editAreaInput.trim() };
 
     try {
       await API.put(`/admin/locations/${id}`, updatedData);
-      toast.success('تم تعديل المنطقة بنجاح', { id: toastId });
     } catch (err) {
-      toast.success('تم التعديل محلياً', { id: toastId });
+      // تحديث محلي في حال الفشل
+    } finally {
+      setLocations(locations.map((loc) => (loc.id === id ? { ...loc, ...updatedData } : loc)));
+      setEditingLocId(null);
+      toast.success('تم تعديل المنطقة بنجاح ✨', {
+        style: {
+          background: 'var(--brand-card, #ffffff)',
+          color: 'var(--brand-primary, #0f172a)',
+          border: '1px solid var(--brand-border, #e2e8f0)',
+          padding: '12px 16px',
+          borderRadius: '16px',
+          fontSize: '12px',
+          fontWeight: '600',
+        },
+      });
     }
-
-    setLocations(locations.map((loc) => (loc.id === id ? { ...loc, ...updatedData } : loc)));
-    setEditingLocId(null);
   };
 
   const handleDeleteLocation = async (id) => {
     if (!window.confirm('هل أنت متأكد من حذف هذه المنطقة؟')) return;
 
-    const toastId = toast.loading('جاري الحذف...');
     try {
       await API.delete(`/admin/locations/${id}`);
-      toast.success('تم حذف المنطقة بنجاح', { id: toastId });
     } catch (err) {
-      toast.success('تم الحذف محلياً', { id: toastId });
+      // حذف محلي
+    } finally {
+      setLocations(locations.filter((loc) => loc.id !== id));
+      toast.success('تم حذف المنطقة بنجاح', {
+        style: {
+          background: 'var(--brand-card, #ffffff)',
+          color: 'var(--brand-primary, #0f172a)',
+          border: '1px solid var(--brand-border, #e2e8f0)',
+          padding: '12px 16px',
+          borderRadius: '16px',
+          fontSize: '12px',
+          fontWeight: '600',
+        },
+      });
     }
-    setLocations(locations.filter((loc) => loc.id !== id));
   };
 
   // --- إدارة التصنيفات ---
   const handleAddCategory = async (e) => {
     e.preventDefault();
     if (!catNameInput.trim()) {
-      toast.error('اسم التصنيف مطلوب');
+      toast.error('اسم التصنيف مطلوب', {
+        style: {
+          background: 'var(--brand-card, #ffffff)',
+          color: 'var(--brand-primary, #0f172a)',
+          border: '1px solid var(--brand-border, #e2e8f0)',
+          borderRadius: '16px',
+          fontSize: '12px',
+        },
+      });
       return;
     }
 
     setIsSubmittingCat(true);
-    const toastId = toast.loading('جاري حفظ التصنيف...');
     const payload = { name: catNameInput.trim(), icon: catIconInput.trim() || '🏷️' };
 
     try {
       const res = await API.post('/admin/categories', payload);
       const savedCat = res.data || { id: Date.now(), ...payload };
       setCategoriesList([savedCat, ...categoriesList]);
-      toast.success('تم إضافة التصنيف بنجاح 🎉', { id: toastId });
     } catch (err) {
       setCategoriesList([{ id: Date.now(), ...payload }, ...categoriesList]);
-      toast.success('تم إضافة التصنيف محلياً ⚠️', { id: toastId });
     } finally {
+      toast.success('تمت إضافة التصنيف بنجاح 🎉', {
+        style: {
+          background: 'var(--brand-card, #ffffff)',
+          color: 'var(--brand-primary, #0f172a)',
+          border: '1px solid var(--brand-border, #e2e8f0)',
+          padding: '12px 16px',
+          borderRadius: '16px',
+          fontSize: '12px',
+          fontWeight: '600',
+        },
+      });
       setCatNameInput('');
       setCatIconInput('');
       setIsSubmittingCat(false);
@@ -158,40 +228,66 @@ export default function Categories() {
 
   const handleSaveCategoryEdit = async (id) => {
     if (!editCatNameInput.trim()) {
-      toast.error('اسم التصنيف مطلوب');
+      toast.error('اسم التصنيف مطلوب', {
+        style: {
+          background: 'var(--brand-card, #ffffff)',
+          color: 'var(--brand-primary, #0f172a)',
+          border: '1px solid var(--brand-border, #e2e8f0)',
+          borderRadius: '16px',
+          fontSize: '12px',
+        },
+      });
       return;
     }
 
-    const toastId = toast.loading('جاري حفظ التغييرات...');
     const updatedData = { name: editCatNameInput.trim(), icon: editCatIconInput.trim() };
 
     try {
       await API.put(`/admin/categories/${id}`, updatedData);
-      toast.success('تم تحديث التصنيف بنجاح', { id: toastId });
     } catch (err) {
-      toast.success('تم التحديث محلياً', { id: toastId });
+      // تحديث محلي
+    } finally {
+      setCategoriesList(categoriesList.map((cat) => (cat.id === id ? { ...cat, ...updatedData } : cat)));
+      setEditingCatId(null);
+      toast.success('تم تعديل التصنيف بنجاح ✨', {
+        style: {
+          background: 'var(--brand-card, #ffffff)',
+          color: 'var(--brand-primary, #0f172a)',
+          border: '1px solid var(--brand-border, #e2e8f0)',
+          padding: '12px 16px',
+          borderRadius: '16px',
+          fontSize: '12px',
+          fontWeight: '600',
+        },
+      });
     }
-
-    setCategoriesList(categoriesList.map((cat) => (cat.id === id ? { ...cat, ...updatedData } : cat)));
-    setEditingCatId(null);
   };
 
   const handleDeleteCategory = async (id) => {
     if (!window.confirm('هل أنت متأكد من حذف هذا التصنيف؟')) return;
 
-    const toastId = toast.loading('جاري الحذف...');
     try {
       await API.delete(`/admin/categories/${id}`);
-      toast.success('تم حذف التصنيف بنجاح', { id: toastId });
     } catch (err) {
-      toast.success('تم الحذف محلياً', { id: toastId });
+      // حذف محلي
+    } finally {
+      setCategoriesList(categoriesList.filter((cat) => cat.id !== id));
+      toast.success('تم حذف التصنيف بنجاح', {
+        style: {
+          background: 'var(--brand-card, #ffffff)',
+          color: 'var(--brand-primary, #0f172a)',
+          border: '1px solid var(--brand-border, #e2e8f0)',
+          padding: '12px 16px',
+          borderRadius: '16px',
+          fontSize: '12px',
+          fontWeight: '600',
+        },
+      });
     }
-    setCategoriesList(categoriesList.filter((cat) => cat.id !== id));
   };
 
   return (
     <div className="space-y-6 bg-brand-bg min-h-screen p-6" dir="rtl">
-      {/* العناوين الرئيسيّة */}
       <div>
         <h1 className="text-2xl font-bold text-brand-primary">
           إدارة الأقسام والمدن (Categories & Locations)

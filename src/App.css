@@ -84,3 +84,8 @@
     @apply right-0 border-r-[var(--color-border)];
   }
 }
+/* تخصيص لون الـ Highlight ليطابق ألوان التطبيق */
+::selection {
+  background-color: var(--brand-primary, #0d9488); /* لون الخلفية عند التحديد */
+  color: #ffffff; /* لون النص المكتوب داخل التحديد */
+}
