@@ -121,160 +121,156 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
   };
 
   return (
-    <>
+    <div className="bg-brand-card rounded-2xl p-6 shadow-xs border border-brand-border mb-6 transition-all duration-300">
+      
       {success && (
-        <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-3 rounded-xl mb-4 text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-all duration-300">
+        <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-3 rounded-xl mb-5 text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-all duration-300">
           <CheckCircle2 size={16} className="text-emerald-600" />
           <span>تم إنشاء حساب التاجر بنجاح وإرسال بيانات الاعتماد له!</span>
         </div>
       )}
 
-      <div className="bg-brand-card rounded-2xl p-6 shadow-xs border border-brand-border mb-6">
-        <div className="flex items-center gap-2 mb-6">
+      {/* التعديل هنا: عنوان القسم أصبح مطابقاً لتصميم (قائمة التجار المسجلين) */}
+      <div className="flex justify-start mb-6">
+        <div className="inline-flex items-center gap-2.5 bg-gray-50 border border-gray-200 text-brand-title px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm">
           <Plus size={18} className="text-brand-secondary" />
-          <h2 className="text-base font-bold text-brand-title">إضافة تاجر جديد</h2>
+          <span>إضافة تاجر جديد</span>
         </div>
+      </div>
 
-        {error && (
-          <div className="bg-rose-50 text-rose-600 border border-rose-200 text-xs p-3 rounded-xl mb-4 text-center font-medium">
-            {error}
-          </div>
-        )}
+      {error && (
+        <div className="bg-rose-50 border border-rose-200 text-rose-600 text-xs p-3.5 rounded-xl mb-5 text-center font-semibold shadow-xs flex items-center justify-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+          <span>{error}</span>
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
-          <input type="text" style={{ display: 'none' }} aria-hidden="true" />
-          <input type="password" style={{ display: 'none' }} aria-hidden="true" />
+      <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
+        <input type="text" style={{ display: 'none' }} aria-hidden="true" />
+        <input type="password" style={{ display: 'none' }} aria-hidden="true" />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-brand-title mb-1.5">اسم التاجر</label>
-              <input
-                type="text"
-                name="merchantName"
-                value={formData.merchantName}
-                onChange={handleChange}
-                autoComplete="off"
-                required
-                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-brand-title mb-1.5">البريد الإلكتروني</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                autoComplete="none"
-                required
-                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-brand-title mb-1.5">كلمة المرور المبدئية</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="tempPassword"
-                  value={formData.tempPassword}
-                  onChange={handleChange}
-                  autoComplete="new-password"
-                  required
-                  className="w-full text-right px-3.5 py-2.5 pl-10 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-body/60 hover:text-brand-secondary focus:outline-none"
-                >
-                  {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
-                </button>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-brand-title mb-1.5">اسم التاجر</label>
+            <input
+              type="text"
+              name="merchantName"
+              value={formData.merchantName}
+              onChange={handleChange}
+              autoComplete="off"
+              required
+              className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors"
+            />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-brand-title mb-1.5">اسم المتجر</label>
-              <input
-                type="text"
-                name="storeName"
-                value={formData.storeName}
-                onChange={handleChange}
-                autoComplete="off"
-                required
-                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-brand-title mb-1.5">رقم التواصل</label>
-              <input
-                type="text"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                autoComplete="off"
-                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-brand-title mb-1.5">التصنيف</label>
-              <select
-                name="categoryId"
-                value={formData.categoryId}
-                onChange={handleChange}
-                required
-                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
-              >
-                <option value="" disabled hidden>اختر التصنيف</option>
-                <option value="1">ملابس وموضة</option>
-                <option value="2">مطاعم وكافيهات</option>
-                <option value="3">إلكترونيات</option>
-                <option value="4">عطور ومستحضرات</option>
-                <option value="5">أدوات منزلية</option>
-                <option value="6">سوبر ماركت</option>
-              </select>
-            </div>
+          <div>
+            <label className="block text-xs font-semibold text-brand-title mb-1.5">البريد الإلكتروني</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              autoComplete="off"
+              required
+              className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors"
+            />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-            <div>
-              <label className="block text-xs font-semibold text-brand-title mb-1.5">الموقع الجغرافي</label>
-              <select
-                name="cityId"
-                value={formData.cityId}
+          <div>
+            <label className="block text-xs font-semibold text-brand-title mb-1.5">كلمة المرور المبدئية</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="tempPassword"
+                value={formData.tempPassword}
                 onChange={handleChange}
+                autoComplete="new-password"
                 required
-                className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
-              >
-                <option value="" disabled hidden>اختر موقع المتجر</option>
-                <option value="1">شمال غزة</option>
-                <option value="2">غزة</option>
-                <option value="3">النصيرات</option>
-                <option value="4">البريج</option>
-                <option value="5">المغازي</option>
-                <option value="6">دير البلح</option>
-                <option value="7">خانيونس</option>
-              </select>
-            </div>
-
-            <div className="md:col-span-2 flex justify-end">
+                className="w-full text-right px-3.5 py-2.5 pl-10 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors"
+              />
               <button
-                type="submit"
-                disabled={loading}
-                className="bg-brand-title hover:bg-brand-title/90 text-white px-6 py-2.5 rounded-xl text-xs font-semibold transition duration-200 shadow-xs flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-body/60 hover:text-brand-secondary focus:outline-none"
               >
-                {loading && <Loader2 size={14} className="animate-spin" />}
-                إنشاء حساب التاجر
+                {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
               </button>
             </div>
           </div>
-        </form>
-      </div>
-    </>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-brand-title mb-1.5">اسم المتجر</label>
+            <input
+              type="text"
+              name="storeName"
+              value={formData.storeName}
+              onChange={handleChange}
+              autoComplete="off"
+              required
+              className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-brand-title mb-1.5">رقم التواصل</label>
+            <input
+              type="text"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              autoComplete="off"
+              className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-brand-title mb-1.5">التصنيف</label>
+            <select
+              name="categoryId"
+              value={formData.categoryId}
+              onChange={handleChange}
+              required
+              className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors appearance-none"
+            >
+              <option value="" disabled hidden>اختر التصنيف</option>
+              {Object.entries(CATEGORY_MAP).map(([id, name]) => (
+                <option key={id} value={id}>{name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div>
+            <label className="block text-xs font-semibold text-brand-title mb-1.5">الموقع الجغرافي</label>
+            <select
+              name="cityId"
+              value={formData.cityId}
+              onChange={handleChange}
+              required
+              className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors appearance-none"
+            >
+              <option value="" disabled hidden>اختر موقع المتجر</option>
+              {Object.entries(CITY_MAP).map(([id, name]) => (
+                <option key={id} value={id}>{name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="md:col-span-2 flex justify-start">
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-brand-title hover:bg-brand-title/90 text-white px-6 py-2.5 rounded-xl text-xs font-semibold transition duration-200 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+            >
+              {loading && <Loader2 size={14} className="animate-spin" />}
+              <span>إنشاء حساب التاجر</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
   );
 }

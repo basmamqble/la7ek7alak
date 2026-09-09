@@ -21,7 +21,7 @@ import {
 import API from '../api/axios';
 
 // استدعاء الشعار الافتراضي الخاص بالمنصة من مجلد الأصول
-import defaultLogo from '../assets/logo.jpg';
+import defaultLogo from '../assets/logo.svg';
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('general');

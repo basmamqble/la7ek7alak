@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Store, MapPin, Loader2, Edit, Phone, Lock, Eye, EyeOff, X, CheckCircle, KeyRound } from 'lucide-react';
+import { Store, MapPin, Loader2, Edit, Phone, Eye, EyeOff, X, CheckCircle, KeyRound, Search, AlertTriangle, Plus } from 'lucide-react';
 import API from '../../api/axios';
 import ResetPasswordModal from '../common/ResetPasswordModal';
 
@@ -22,7 +22,7 @@ const CITY_MAP = {
   7: 'خانيونس',
 };
 
-export default function MerchantTable({ merchants, refreshMerchants, loading }) {
+export default function MerchantTable({ merchants, refreshMerchants, loading, onOpenAddMerchant }) {
   const [updatingId, setUpdatingId] = useState(null);
 
   // حالة التحكم بمودال إعادة تعيين كلمة المرور
@@ -40,14 +40,42 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', text: '' });
 
-  // دالة تغيير حالة التاجر (نشط / غير نشط)
-  const toggleStatus = async (id, currentStatus) => {
-    if (!id || updatingId) return;
+  // حالة البحث (Search State)
+  const [searchQuery, setSearchQuery] = useState('');
 
-    setUpdatingId(id);
+  // حالات مودال تأكيد تغيير الحالة
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    merchantId: null,
+    currentStatus: null,
+    storeName: '',
+  });
+
+  // فتح مودال تأكيد تغيير الحالة
+  const handleOpenStatusConfirm = (item) => {
+    const itemId = item.id || item._id;
+    const storeName = item.storeName || item.store_name || item.stores?.[0]?.name || item.shopName || 'المتجر';
+    const isActive = item.status === 'active' || item.status === 'نشط' || item.isActive === true;
+
+    setConfirmModal({
+      isOpen: true,
+      merchantId: itemId,
+      currentStatus: isActive ? 'active' : 'inactive',
+      storeName: storeName,
+    });
+  };
+
+  // التنفيذ الفعلي لتغيير الحالة بعد التأكيد
+  const confirmToggleStatus = async () => {
+    const { merchantId, currentStatus } = confirmModal;
+    if (!merchantId) return;
+
+    setUpdatingId(merchantId);
+    setConfirmModal({ isOpen: false, merchantId: null, currentStatus: null, storeName: '' });
+
     try {
-      const nextStatus = currentStatus === 'active' || currentStatus === 'نشط' ? 'inactive' : 'active';
-      await API.patch(`/admin/merchants/${id}/status`, { status: nextStatus });
+      const nextStatus = currentStatus === 'active' ? 'inactive' : 'active';
+      await API.patch(`/admin/merchants/${merchantId}/status`, { status: nextStatus });
 
       if (typeof refreshMerchants === 'function') {
         await refreshMerchants();
@@ -147,11 +175,46 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
     return 'عام';
   };
 
+  // تصفية التجار بناءً على حقل البحث
+  const filteredMerchants = safeMerchants.filter((item) => {
+    const storeName = item.storeName || item.store_name || item.stores?.[0]?.name || item.shopName || '';
+    const merchantName = item.fullName || item.name || item.merchantName || item.merchant_name || '';
+    const location = getLocationName(item);
+
+    const query = searchQuery.toLowerCase();
+    return (
+      storeName.toLowerCase().includes(query) ||
+      merchantName.toLowerCase().includes(query) ||
+      location.toLowerCase().includes(query)
+    );
+  });
+
   return (
-    <div className="bg-brand-card rounded-2xl p-6 shadow-xs border border-brand-border">
-      <div className="flex items-center gap-2 mb-4">
-        <Store size={18} className="text-brand-secondary" />
-        <h2 className="text-base font-bold text-brand-title">قائمة التجار المسجلين</h2>
+    <div className="bg-brand-card rounded-2xl p-6 shadow-xs border border-brand-border space-y-5">
+      
+      {/* الهيدر العلوي: زر "إضافة تاجر جديد" على اليسار، و"قائمة التجار المسجلين" على اليمين بنفس التصميم تماماً */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        
+       
+
+        {/* عنوان قائمة التجار المسجلين */}
+        <div className="bg-brand-bg border border-brand-border rounded-xl px-4 py-2.5 inline-flex items-center gap-2 text-brand-title font-bold text-sm shadow-xs">
+          <Store size={18} className="text-brand-secondary" />
+          <span>قائمة التجار المسجلين</span>
+        </div>
+
+      </div>
+
+      {/* شريط البحث */}
+      <div className="w-full relative">
+        <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-body/60" size={18} />
+        <input
+          type="text"
+          placeholder="ابحث باسم المتجر أو التاجر أو المنطقة..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-brand-bg pr-11 pl-4 py-3 rounded-xl border border-brand-border text-xs text-brand-title focus:outline-none focus:border-brand-secondary transition shadow-xs"
+        />
       </div>
 
       <div className="overflow-x-auto">
@@ -177,14 +240,14 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
                   </div>
                 </td>
               </tr>
-            ) : safeMerchants.length === 0 ? (
+            ) : filteredMerchants.length === 0 ? (
               <tr>
                 <td colSpan="7" className="py-8 text-center text-brand-body/60">
-                  لا يوجد تجار مسجلون حالياً.
+                  لا توجد نتائج مطابقة لبحثك.
                 </td>
               </tr>
             ) : (
-              safeMerchants.map((item, index) => {
+              filteredMerchants.map((item, index) => {
                 const itemId = item.id || item._id || index;
                 const isActive = item.status === 'active' || item.status === 'نشط' || item.isActive === true;
                 const storeName = item.storeName || item.store_name || item.stores?.[0]?.name || item.shopName || 'غير محدد';
@@ -212,7 +275,7 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
                       <button
                         type="button"
                         disabled={isCurrentlyUpdating}
-                        onClick={() => toggleStatus(itemId, item.status)}
+                        onClick={() => handleOpenStatusConfirm(item)}
                         title="اضغط لتغيير الحالة"
                         className={`inline-flex items-center justify-center gap-1.5 px-4 py-1 rounded-full text-xs font-bold transition duration-200 cursor-pointer disabled:opacity-50 ${
                           isActive
@@ -253,6 +316,48 @@ export default function MerchantTable({ merchants, refreshMerchants, loading }) 
           </tbody>
         </table>
       </div>
+
+      {/* مودال تأكيد تغيير حالة التاجر */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-brand-card rounded-2xl w-full max-w-sm p-6 shadow-xl border border-brand-border relative text-right space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-brand-title">تأكيد تغيير الحالة</h3>
+                <p className="text-xs text-brand-body/70 mt-0.5">متجر: {confirmModal.storeName}</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-brand-body">
+              هل أنت متأكد من رغبتك في تحويل حالة هذا المتجر إلى{' '}
+              <span className="font-bold text-brand-title">
+                {confirmModal.currentStatus === 'active' ? 'غير نشط (معطل)' : 'نشط'}
+              </span>
+              ؟
+            </p>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmModal({ isOpen: false, merchantId: null, currentStatus: null, storeName: '' })}
+                className="px-4 py-2 bg-brand-bg text-brand-body rounded-xl text-xs font-medium hover:bg-brand-border/60 transition cursor-pointer"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={confirmToggleStatus}
+                className="px-5 py-2 bg-brand-secondary text-white rounded-xl text-xs font-medium hover:bg-brand-secondary/90 transition cursor-pointer shadow-xs"
+              >
+                تأكيد التغيير
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* مودال تغيير كلمة المرور */}
       {selectedUserForReset && (

@@ -39,17 +39,19 @@ export default function Sidebar({ onClose }) {
   return (
     <aside className="w-64 bg-brand-primary text-white flex flex-col justify-between h-full z-20 shadow-lg select-none">
       <div className="flex flex-col h-full overflow-hidden">
-        {/* الهيدر الخاص بالشريط الجانبي */}
+        
+        {/* هيدر الشريط الجانبي مع الاسم ولوحة التحكم بدون اللوجو */}
         <div className="p-5 border-b border-brand-primary-hover/40 flex items-center justify-between relative shrink-0">
-          <div className="w-full flex flex-col items-center text-center">
+          <div className="w-full text-center space-y-1">
             <h1 className="text-base font-bold text-white leading-tight">لحّق حالك</h1>
-            <span className="text-[11px] text-brand-primary-soft/80 mt-0.5 font-medium">لوحة تحكم الأدمن</span>
+            <span className="text-[11px] text-brand-primary-soft/80 font-medium block">لوحة تحكم الأدمن</span>
           </div>
+
           {onClose && (
             <button 
               onClick={onClose} 
               type="button"
-              className="absolute left-4 p-1.5 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition cursor-pointer"
+              className="absolute left-4 top-4 p-1.5 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition cursor-pointer"
               title="إغلاق القائمة"
             >
               <X size={18} />
@@ -57,7 +59,7 @@ export default function Sidebar({ onClose }) {
           )}
         </div>
 
-        {/* قائمة التنقل - تم تعديل الاتجاه والشريط ليكون يمينياً ومنسقاً */}
+        {/* قائمة التنقل */}
         <nav 
           dir="ltr" 
           className="p-4 space-y-1.5 overflow-y-auto flex-1 custom-scrollbar"
@@ -96,7 +98,7 @@ export default function Sidebar({ onClose }) {
         </nav>
       </div>
 
-      {/* زر تسجيل الخروج السفلي بألوان الهوية */}
+      {/* زر تسجيل الخروج السفلي */}
       <div className="p-4 border-t border-brand-primary-hover/40 shrink-0 bg-brand-primary">
         <button
           onClick={handleLogout}
