@@ -8,35 +8,17 @@ import {
   AlertTriangle, 
   ShieldCheck, 
   ArrowRight,
-  CreditCard,
-  KeyRound
+  CreditCard
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import ResetPasswordModal from "../components/common/ResetPasswordModal";
 
 export default function Notifications() {
   const navigate = useNavigate();
-  const [filter, setFilter] = useState('all'); // all | unread | reset_password | customers | stories | report | subscription | system
-
-  // حالة التحكم بفتح مودال إعادة تعيين كلمة المرور
-  const [selectedUserForReset, setSelectedUserForReset] = useState(null);
+  const [filter, setFilter] = useState('all'); // all | unread | customers | stories | report | subscription | system
 
   const [notifications, setNotifications] = useState([
     {
       id: 1,
-      title: 'طلب إعادة تعيين كلمة المرور',
-      desc: 'قام الزبون "محمود أحمد" (0599123456) بتقديم طلب لإعادة تعيين كلمة المرور الخاصة بحسابه.',
-      time: 'منذ دقيقتين',
-      isRead: false,
-      type: 'reset_password',
-      userData: {
-        id: 'usr_101',
-        name: 'محمود أحمد',
-        phone: '0599123456'
-      }
-    },
-    {
-      id: 2,
       title: 'تم نشر ستوري جديدة',
       desc: 'قام متجر "القدس للتسوق" بنشر ستوري عرض جديد وهي متاحة الآن لمدة 24 ساعة.',
       time: 'منذ 3 دقائق',
@@ -45,7 +27,7 @@ export default function Notifications() {
       link: '/stories'
     },
     {
-      id: 3,
+      id: 2,
       title: 'تم رفع وصل دفع جديد',
       desc: 'قام متجر "الأناقة" برفع وصل دفع جديد لتجديد الاشتراك الشهري.',
       time: 'منذ 12 دقيقة',
@@ -54,7 +36,7 @@ export default function Notifications() {
       link: '/subscriptions'
     },
     {
-      id: 4,
+      id: 3,
       title: 'انضمام زبون جديد للمنصة',
       desc: 'قام مستخدم جديد (أحمد علي) بإنشاء حساب زبون وتأكيد رقم الجوال.',
       time: 'منذ 15 دقيقة',
@@ -63,7 +45,7 @@ export default function Notifications() {
       link: '/customers'
     },
     {
-      id: 5,
+      id: 4,
       title: 'تم تقديم بلاغ جديد على عرض',
       desc: 'تم الإبلاغ عن ستوري خاصة بمحل "الأمل" بسبب محتوى مخالف لشروط الاستخدام.',
       time: 'منذ ساعة',
@@ -72,7 +54,7 @@ export default function Notifications() {
       link: '/reports'
     },
     {
-      id: 6,
+      id: 5,
       title: 'تم تحديث إعدادات النظام',
       desc: 'تم إكمال النسخ الاحتياطي التلقائي لقاعدة البيانات بنجاح.',
       time: 'منذ يومين',
@@ -88,10 +70,8 @@ export default function Notifications() {
       prev.map(n => (n.id === item.id ? { ...n, isRead: true } : n))
     );
 
-    // إذا كان الإشعار طلب إعادة تعيين كلمة المرور -> افتح المودال
-    if (item.type === 'reset_password' && item.userData) {
-      setSelectedUserForReset(item.userData);
-    } else if (item.link) {
+    // الانتقال للرابط المرتبط إن وجد
+    if (item.link) {
       navigate(item.link);
     }
   };
@@ -107,18 +87,16 @@ export default function Notifications() {
 
   const filteredNotifications = notifications.filter(n => {
     if (filter === 'unread') return !n.isRead;
-    if (filter === 'reset_password') return n.type === 'reset_password';
     if (filter === 'customers') return n.type === 'customer';
     if (filter === 'stories') return n.type === 'story';
     if (filter === 'report') return n.type === 'report';
     if (filter === 'subscription') return n.type === 'subscription';
+    if (filter === 'system') return n.type === 'system';
     return true;
   });
 
   const getNotificationIcon = (type) => {
     switch (type) {
-      case 'reset_password':
-        return <KeyRound size={18} className="text-amber-600" />;
       case 'customer':
         return <UserPlus size={18} className="text-emerald-600" />;
       case 'story':
@@ -135,7 +113,6 @@ export default function Notifications() {
   };
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
-  const resetRequestsCount = notifications.filter(n => n.type === 'reset_password' && !n.isRead).length;
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6 text-right font-sans" dir="rtl">
@@ -150,7 +127,7 @@ export default function Notifications() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-brand-primary">مركز الإشعارات</h1>
-            <p className="text-xs text-brand-body/70 mt-0.5">متابعة تنبيهات طلبات كلمة المرور، انضمام الزبائن، الستوريات والاشتراكات</p>
+            <p className="text-xs text-brand-body/70 mt-0.5">متابعة تنبيهات انضمام الزبائن، الستوريات، الاشتراكات والبلاغات</p>
           </div>
         </div>
 
@@ -186,21 +163,6 @@ export default function Notifications() {
           }`}
         >
           غير المقروءة ({unreadCount})
-        </button>
-        <button
-          onClick={() => setFilter('reset_password')}
-          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-            filter === 'reset_password'
-              ? 'bg-brand-secondary text-white shadow-sm'
-              : 'bg-brand-card text-amber-700 hover:bg-amber-50/50 border border-amber-200'
-          }`}
-        >
-          <span>طلبات كلمة المرور</span>
-          {resetRequestsCount > 0 && (
-            <span className="px-1.5 py-0.2 bg-amber-500 text-white text-[10px] rounded-full">
-              {resetRequestsCount}
-            </span>
-          )}
         </button>
         <button
           onClick={() => setFilter('stories')}
@@ -283,23 +245,9 @@ export default function Notifications() {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                {/* إذا كان الإشعار طلب كلمة مرور -> زر مباشر لإعادة التعيين */}
-                {item.type === 'reset_password' ? (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleNotificationClick(item);
-                    }}
-                    className="px-3 py-1.5 bg-brand-secondary hover:bg-brand-primary text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-xs cursor-pointer"
-                  >
-                    <KeyRound size={14} />
-                    <span>تعيين كلمة السر</span>
-                  </button>
-                ) : (
-                  <div className="p-2 text-brand-body/30">
-                    <ArrowRight size={16} className="rotate-180" />
-                  </div>
-                )}
+                <div className="p-2 text-brand-body/30">
+                  <ArrowRight size={16} className="rotate-180" />
+                </div>
 
                 <button
                   onClick={(e) => deleteNotification(e, item.id)}
@@ -318,16 +266,6 @@ export default function Notifications() {
           </div>
         )}
       </div>
-
-      {/* مودال تغيير كلمة المرور عند النقر على إشعار طلب التعيين */}
-      {selectedUserForReset && (
-        <ResetPasswordModal
-          userId={selectedUserForReset.id}
-          userName={selectedUserForReset.name}
-          userPhone={selectedUserForReset.phone}
-          onClose={() => setSelectedUserForReset(null)}
-        />
-      )}
     </div>
   );
 }

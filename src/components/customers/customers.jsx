@@ -1,183 +1,180 @@
-import React, { useState, useEffect } from 'react';
-import { Search, UserPlus, X } from 'lucide-react';
-import CustomersTable from './customersTable';
-import API from '../../api/axios'; // عدلي المسار بحسب موقع مجلد api لديك
+import React from 'react';
+import { Mail, Phone, Ban, Trash2, Edit, Save, X, Loader2 } from 'lucide-react';
 
-// بيانات وهمية افتراضية لعرضها في الجدول
-const defaultCustomers = [
-  { id: 1, name: 'أحمد محمود', email: 'ahmed@example.com', phone: '0599123456', status: 'active' },
-  { id: 2, name: 'سارة علي', email: 'sara@example.com', phone: '0598765432', status: 'active' },
-  { id: 3, name: 'محمد خالد', email: 'mohamed@example.com', phone: '0597112233', status: 'banned' },
-];
-
-export default function Customers() {
-  const [customers, setCustomers] = useState(defaultCustomers);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
-
-  // جلب البيانات من الباك إند
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const response = await API.get('/admin/customers');
-        if (response.data && response.data.length > 0) {
-          setCustomers(response.data);
-        }
-      } catch (err) {
-        console.log('استخدام البيانات الافتراضية للزبائن');
-      }
-    };
-    fetchCustomers();
-  }, []);
-
-  const handleAddCustomer = (e) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.phone) return;
-
-    const newCustomer = {
-      id: Date.now(),
-      ...formData,
-      status: 'active',
-    };
-
-    setCustomers([newCustomer, ...customers]);
-    setFormData({ name: '', email: '', phone: '' });
-    setIsModalOpen(false);
-  };
-
-  const handleToggleStatus = (id) => {
-    setCustomers(
-      customers.map((c) =>
-        c.id === id ? { ...c, status: c.status === 'active' ? 'banned' : 'active' } : c
-      )
-    );
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm('هل أنت متأكد من حذف هذا الزبون؟')) {
-      setCustomers(customers.filter((c) => c.id !== id));
-    }
-  };
-
-  const filteredCustomers = customers.filter((c) => {
-    const name = c.name || c.fullName || '';
-    const email = c.email || '';
-    const phone = c.phone || c.phoneNumber || '';
-    return (
-      name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      phone.includes(searchTerm)
-    );
-  });
-
+export default function CustomersTable({
+  customers = [],
+  editingId,
+  editFormData,
+  setEditFormData,
+  updatingId,
+  isSubmitting,
+  onStartEdit,
+  onCancelEdit,
+  onSaveEdit,
+  onOpenStatusConfirm,
+  onDelete,
+}) {
   return (
-    <div className="space-y-6" dir="rtl">
-      {/* العنوان وزر الإضافة */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-brand-title">إدارة الزبائن</h1>
-          <p className="text-xs text-brand-body mt-1">عرض وتعديل بيانات حسابات الزبائن المسجلين</p>
-        </div>
+    <div className="bg-brand-card rounded-2xl border border-brand-border shadow-xs overflow-hidden">
+      <table className="w-full text-right border-collapse text-xs table-fixed">
+        <thead>
+          <tr className="bg-brand-bg text-brand-body font-bold border-b border-brand-border">
+            <th className="p-4 w-1/4 text-right">الزبون</th>
+            <th className="p-4 w-1/3 text-right">البريد الإلكتروني</th>
+            <th className="p-4 w-1/4 text-right">رقم الهاتف</th>
+            <th className="p-4 w-1/6 text-center">الحالة</th>
+            <th className="p-4 w-1/4 text-center">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-brand-border">
+          {customers.length === 0 ? (
+            <tr>
+              <td colSpan="5" className="text-center py-8 text-gray-400">
+                لا يوجد زبائن مطبقين لشروط البحث.
+              </td>
+            </tr>
+          ) : (
+            customers.map((customer) => {
+              const custId = customer.id || customer._id;
+              const isEditing = editingId === custId;
+              const isUpdating = updatingId === custId;
+              const isBanned = customer.status === 'banned' || customer.status === 'محظور';
 
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-brand-secondary hover:bg-brand-secondary-hover text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer"
-        >
-          <UserPlus size={16} />
-          <span>إضافة زبون جديد</span>
-        </button>
-      </div>
+              return (
+                <tr key={custId} className="hover:bg-brand-bg/50 transition">
+                  {/* اسم الزبون */}
+                  <td className="p-4 font-bold text-brand-title truncate">
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editFormData.name}
+                        onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                        className="w-full bg-brand-bg px-2.5 py-1.5 rounded-lg border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title"
+                      />
+                    ) : (
+                      customer.name || customer.fullName
+                    )}
+                  </td>
 
-      {/* البحث */}
-      <div className="relative max-w-md">
-        <input
-          type="text"
-          placeholder="بحث بالاسم، البريد، أو الرقم..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pr-10 pl-4 py-2.5 bg-brand-card border border-brand-border rounded-xl text-xs text-brand-title focus:outline-none focus:border-brand-secondary transition"
-        />
-        <Search size={16} className="absolute right-3.5 top-3 text-gray-400" />
-      </div>
+                  {/* البريد الإلكتروني */}
+                  <td className="p-4 text-brand-body truncate">
+                    {isEditing ? (
+                      <div className="relative">
+                        <input
+                          type="email"
+                          value={editFormData.email}
+                          onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                          className="w-full bg-brand-bg pr-8 pl-3 py-1.5 rounded-lg border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title text-right"
+                        />
+                        <Mail size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-2">
+                        <Mail size={13} className="text-gray-400 shrink-0" />
+                        <span className="truncate">{customer.email}</span>
+                      </span>
+                    )}
+                  </td>
 
-      {/* مكون الجدول */}
-      <CustomersTable 
-        customers={filteredCustomers} 
-        onToggleStatus={handleToggleStatus}
-        onDelete={handleDelete}
-      />
+                  {/* رقم الهاتف */}
+                  <td className="p-4 text-brand-body font-mono">
+                    {isEditing ? (
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={editFormData.phone}
+                          onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                          className="w-full bg-brand-bg pr-8 pl-3 py-1.5 rounded-lg border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title text-right"
+                        />
+                        <Phone size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-2">
+                        <Phone size={13} className="text-gray-400 shrink-0" />
+                        <span dir="ltr" className="text-right">{customer.phone || customer.phoneNumber}</span>
+                      </span>
+                    )}
+                  </td>
 
-      {/* Modal إضافة زبون */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-brand-card w-full max-w-md rounded-2xl shadow-lg border border-brand-border p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-brand-border pb-3">
-              <h3 className="font-bold text-sm text-brand-title">إضافة زبون جديد</h3>
-              <button 
-                onClick={() => setIsModalOpen(false)} 
-                className="text-gray-400 hover:text-brand-title transition cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
+                  {/* الحالة */}
+                  <td className="p-4 text-center">
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold ${
+                        isBanned
+                          ? 'bg-rose-50 text-rose-600'
+                          : 'bg-emerald-50 text-emerald-600'
+                      }`}
+                    >
+                      {isBanned ? 'محظور' : 'نشط'}
+                    </span>
+                  </td>
 
-            <form onSubmit={handleAddCustomer} className="space-y-3">
-              <div>
-                <label className="block text-xs font-bold text-brand-title mb-1">اسم الزبون</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="مثال: خالد محمد"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-brand-border rounded-xl text-xs bg-brand-card text-brand-title focus:outline-none focus:border-brand-secondary transition"
-                />
-              </div>
+                  {/* الإجراءات */}
+                  <td className="p-4 text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      {isEditing ? (
+                        <>
+                          <button
+                            onClick={() => onSaveEdit(custId)}
+                            disabled={isSubmitting}
+                            className="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                            title="حفظ"
+                          >
+                            {isSubmitting ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                            <span>حفظ</span>
+                          </button>
+                          <button
+                            onClick={onCancelEdit}
+                            className="px-2.5 py-1.5 bg-brand-bg text-brand-body rounded-lg hover:bg-brand-border/60 transition font-medium flex items-center gap-1 cursor-pointer"
+                            title="إلغاء"
+                          >
+                            <X size={13} />
+                            <span>إلغاء</span>
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {/* زر تعديل البيانات المباشر */}
+                          <button
+                            onClick={() => onStartEdit(customer)}
+                            className="p-1.5 text-brand-secondary hover:bg-brand-secondary/10 rounded-lg transition cursor-pointer"
+                            title="تعديل البيانات"
+                          >
+                            <Edit size={15} />
+                          </button>
 
-              <div>
-                <label className="block text-xs font-bold text-brand-title mb-1">البريد الإلكتروني</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="example@domain.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-brand-border rounded-xl text-xs bg-brand-card text-brand-title focus:outline-none focus:border-brand-secondary transition"
-                />
-              </div>
+                          {/* زر تغيير الحالة / الحظر لإظهار المودال */}
+                          {onOpenStatusConfirm && (
+                            <button
+                              onClick={() => onOpenStatusConfirm(customer)}
+                              disabled={isUpdating}
+                              className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition cursor-pointer disabled:opacity-50"
+                              title="تغيير الحالة"
+                            >
+                              {isUpdating ? <Loader2 size={15} className="animate-spin" /> : <Ban size={15} />}
+                            </button>
+                          )}
 
-              <div>
-                <label className="block text-xs font-bold text-brand-title mb-1">رقم الهاتف</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="059XXXXXXX"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-brand-border rounded-xl text-xs bg-brand-card text-brand-title focus:outline-none focus:border-brand-secondary transition"
-                />
-              </div>
-
-              <div className="flex gap-2 pt-3">
-                <button
-                  type="submit"
-                  className="flex-1 bg-brand-primary text-white py-2 rounded-xl text-xs font-bold hover:bg-brand-primary-hover transition cursor-pointer"
-                >
-                  حفظ الزبون
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 bg-brand-bg text-brand-title py-2 rounded-xl text-xs font-bold hover:bg-brand-border/60 transition cursor-pointer"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                          {/* زر الحذف */}
+                          {onDelete && (
+                            <button
+                              onClick={() => onDelete(custId)}
+                              className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                              title="حذف"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }

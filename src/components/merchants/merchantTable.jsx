@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Store, MapPin, Loader2, Edit, Phone, Eye, EyeOff, X, CheckCircle, KeyRound, Search, AlertTriangle, Plus } from 'lucide-react';
+import { Store, MapPin, Loader2, Edit, Save, X, Search, AlertTriangle } from 'lucide-react';
 import API from '../../api/axios';
-import ResetPasswordModal from '../common/ResetPasswordModal';
 
 const CATEGORY_MAP = {
   1: 'ملابس وموضة',
@@ -25,20 +24,16 @@ const CITY_MAP = {
 export default function MerchantTable({ merchants, refreshMerchants, loading, onOpenAddMerchant }) {
   const [updatingId, setUpdatingId] = useState(null);
 
-  // حالة التحكم بمودال إعادة تعيين كلمة المرور
-  const [selectedUserForReset, setSelectedUserForReset] = useState(null);
-
-  // حالات مودال التعديل
-  const [selectedMerchant, setSelectedMerchant] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  // حالات التعديل المباشر (Inline Editing)
+  const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({
-    name: '',
+    storeName: '',
+    merchantName: '',
     phone: '',
-    password: '',
+    cityId: '',
+    categoryId: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState({ type: '', text: '' });
 
   // حالة البحث (Search State)
   const [searchQuery, setSearchQuery] = useState('');
@@ -87,51 +82,53 @@ export default function MerchantTable({ merchants, refreshMerchants, loading, on
     }
   };
 
-  // فتح نافذة التعديل
-  const handleOpenEdit = (item) => {
-    setSelectedMerchant(item);
+  // تفعيل وضع التعديل المباشر للصف
+  const handleStartEdit = (item) => {
+    const itemId = item.id || item._id;
+    setEditingId(itemId);
+    
+    const storeName = item.storeName || item.store_name || item.stores?.[0]?.name || item.shopName || '';
     const merchantName = item.fullName || item.name || item.merchantName || item.merchant_name || '';
+    const phone = item.phone || item.phoneNumber || '';
+    const cityId = item.cityId ?? item.city_id ?? item.store?.cityId ?? item.store?.city_id ?? '';
+    const categoryId = item.categoryId ?? item.category_id ?? item.store?.categoryId ?? item.store?.category_id ?? '';
+
     setEditFormData({
-      name: merchantName,
-      phone: item.phone || item.phoneNumber || '',
-      password: '',
+      storeName,
+      merchantName,
+      phone,
+      cityId,
+      categoryId,
     });
-    setShowPassword(true);
-    setIsEditModalOpen(true);
   };
 
-  // حفظ تعديلات التاجر
-  const handleSaveMerchant = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setFeedback({ type: '', text: '' });
+  // إلغاء التعديل
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditFormData({ storeName: '', merchantName: '', phone: '', cityId: '', categoryId: '' });
+  };
 
+  // حفظ تعديلات التاجر المباشرة
+  const handleSaveEdit = async (itemId) => {
+    setIsSubmitting(true);
     try {
-      const targetId = selectedMerchant.id || selectedMerchant._id;
       const payload = {
-        name: editFormData.name,
+        storeName: editFormData.storeName,
+        name: editFormData.merchantName,
         phone: editFormData.phone,
+        cityId: editFormData.cityId ? Number(editFormData.cityId) : undefined,
+        categoryId: editFormData.categoryId ? Number(editFormData.categoryId) : undefined,
       };
 
-      if (editFormData.password.trim() !== '') {
-        payload.password = editFormData.password;
+      await API.put(`/admin/merchants/${itemId}`, payload);
+
+      setEditingId(null);
+      if (typeof refreshMerchants === 'function') {
+        await refreshMerchants();
       }
-
-      await API.put(`/admin/merchants/${targetId}`, payload);
-
-      setFeedback({ type: 'success', text: 'تم تحديث بيانات التاجر بنجاح!' });
-      setTimeout(async () => {
-        setIsEditModalOpen(false);
-        setFeedback({ type: '', text: '' });
-        if (typeof refreshMerchants === 'function') {
-          await refreshMerchants();
-        }
-      }, 1200);
     } catch (err) {
-      setFeedback({
-        type: 'error',
-        text: err.response?.data?.message || 'حدث خطأ أثناء تعديل بيانات التاجر',
-      });
+      console.error('حدث خطأ أثناء تعديل بيانات التاجر:', err);
+      alert(err.response?.data?.message || 'حدث خطأ أثناء تعديل بيانات التاجر');
     } finally {
       setIsSubmitting(false);
     }
@@ -192,17 +189,12 @@ export default function MerchantTable({ merchants, refreshMerchants, loading, on
   return (
     <div className="bg-brand-card rounded-2xl p-6 shadow-xs border border-brand-border space-y-5">
       
-      {/* الهيدر العلوي: زر "إضافة تاجر جديد" على اليسار، و"قائمة التجار المسجلين" على اليمين بنفس التصميم تماماً */}
+      {/* عنوان قائمة التجار المسجلين */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        
-       
-
-        {/* عنوان قائمة التجار المسجلين */}
         <div className="bg-brand-bg border border-brand-border rounded-xl px-4 py-2.5 inline-flex items-center gap-2 text-brand-title font-bold text-sm shadow-xs">
           <Store size={18} className="text-brand-secondary" />
           <span>قائمة التجار المسجلين</span>
         </div>
-
       </div>
 
       {/* شريط البحث */}
@@ -249,6 +241,7 @@ export default function MerchantTable({ merchants, refreshMerchants, loading, on
             ) : (
               filteredMerchants.map((item, index) => {
                 const itemId = item.id || item._id || index;
+                const isEditing = editingId === itemId;
                 const isActive = item.status === 'active' || item.status === 'نشط' || item.isActive === true;
                 const storeName = item.storeName || item.store_name || item.stores?.[0]?.name || item.shopName || 'غير محدد';
                 const merchantName = item.fullName || item.name || item.merchantName || item.merchant_name || 'غير محدد';
@@ -261,16 +254,92 @@ export default function MerchantTable({ merchants, refreshMerchants, loading, on
 
                 return (
                   <tr key={itemId} className="hover:bg-brand-bg/50 transition">
-                    <td className="py-3.5 px-4 font-medium text-brand-title">{storeName}</td>
-                    <td className="py-3.5 px-4 text-brand-body">{merchantName}</td>
-                    <td className="py-3.5 px-4 text-brand-body">{phone}</td>
-                    <td className="py-3.5 px-4 text-brand-body">
-                      <span className="flex items-center gap-1">
-                        <MapPin size={13} className="text-brand-secondary" />
-                        {location}
-                      </span>
+                    {/* اسم المتجر */}
+                    <td className="py-3.5 px-4 font-medium text-brand-title">
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editFormData.storeName}
+                          onChange={(e) => setEditFormData({ ...editFormData, storeName: e.target.value })}
+                          className="w-full bg-brand-bg px-2.5 py-1.5 rounded-lg border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title"
+                        />
+                      ) : (
+                        storeName
+                      )}
                     </td>
-                    <td className="py-3.5 px-4 text-brand-body">{category}</td>
+
+                    {/* اسم التاجر */}
+                    <td className="py-3.5 px-4 text-brand-body">
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editFormData.merchantName}
+                          onChange={(e) => setEditFormData({ ...editFormData, merchantName: e.target.value })}
+                          className="w-full bg-brand-bg px-2.5 py-1.5 rounded-lg border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title"
+                        />
+                      ) : (
+                        merchantName
+                      )}
+                    </td>
+
+                    {/* رقم الهاتف */}
+                    <td className="py-3.5 px-4 text-brand-body">
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editFormData.phone}
+                          onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                          className="w-full bg-brand-bg px-2.5 py-1.5 rounded-lg border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title"
+                        />
+                      ) : (
+                        phone
+                      )}
+                    </td>
+
+                    {/* موقع المتجر (المدينة) */}
+                    <td className="py-3.5 px-4 text-brand-body">
+                      {isEditing ? (
+                        <select
+                          value={editFormData.cityId}
+                          onChange={(e) => setEditFormData({ ...editFormData, cityId: e.target.value })}
+                          className="w-full bg-brand-bg px-2.5 py-1.5 rounded-lg border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title"
+                        >
+                          <option value="">اختر المدينة</option>
+                          {Object.entries(CITY_MAP).map(([id, name]) => (
+                            <option key={id} value={id}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          <MapPin size={13} className="text-brand-secondary" />
+                          {location}
+                        </span>
+                      )}
+                    </td>
+
+                    {/* التصنيف */}
+                    <td className="py-3.5 px-4 text-brand-body">
+                      {isEditing ? (
+                        <select
+                          value={editFormData.categoryId}
+                          onChange={(e) => setEditFormData({ ...editFormData, categoryId: e.target.value })}
+                          className="w-full bg-brand-bg px-2.5 py-1.5 rounded-lg border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title"
+                        >
+                          <option value="">اختر التصنيف</option>
+                          {Object.entries(CATEGORY_MAP).map(([id, name]) => (
+                            <option key={id} value={id}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        category
+                      )}
+                    </td>
+
+                    {/* حالة الحساب */}
                     <td className="py-3.5 px-4 text-center">
                       <button
                         type="button"
@@ -287,26 +356,39 @@ export default function MerchantTable({ merchants, refreshMerchants, loading, on
                         {isActive ? 'نشط' : 'غير نشط'}
                       </button>
                     </td>
+
+                    {/* الإجراءات */}
                     <td className="py-3.5 px-4 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        {/* زر تعديل البيانات */}
-                        <button
-                          onClick={() => handleOpenEdit(item)}
-                          className="px-3 py-1.5 bg-brand-secondary/10 text-brand-secondary hover:bg-brand-secondary hover:text-white rounded-lg transition font-medium flex items-center justify-center gap-1.5 cursor-pointer"
-                        >
-                          <Edit size={14} />
-                          <span>تعديل</span>
-                        </button>
-
-                        {/* زر إعادة تعيين كلمة المرور */}
-                        <button
-                          onClick={() => setSelectedUserForReset(item)}
-                          className="px-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white rounded-lg transition font-medium flex items-center justify-center gap-1.5 cursor-pointer"
-                          title="تغيير كلمة المرور"
-                        >
-                          <KeyRound size={14} />
-                          <span>كلمة المرور</span>
-                        </button>
+                        {isEditing ? (
+                          <>
+                            <button
+                              onClick={() => handleSaveEdit(itemId)}
+                              disabled={isSubmitting}
+                              className="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                              title="حفظ"
+                            >
+                              {isSubmitting ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                              <span>حفظ</span>
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="px-2.5 py-1.5 bg-brand-bg text-brand-body rounded-lg hover:bg-brand-border/60 transition font-medium flex items-center gap-1 cursor-pointer"
+                              title="إلغاء"
+                            >
+                              <X size={13} />
+                              <span>إلغاء</span>
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => handleStartEdit(item)}
+                            className="px-3 py-1.5 bg-brand-secondary/10 text-brand-secondary hover:bg-brand-secondary hover:text-white rounded-lg transition font-medium flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <Edit size={14} />
+                            <span>تعديل</span>
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -355,113 +437,6 @@ export default function MerchantTable({ merchants, refreshMerchants, loading, on
                 تأكيد التغيير
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* مودال تغيير كلمة المرور */}
-      {selectedUserForReset && (
-        <ResetPasswordModal
-          userId={selectedUserForReset.id || selectedUserForReset._id}
-          userPhone={selectedUserForReset.phone || selectedUserForReset.phoneNumber}
-          userName={selectedUserForReset.fullName || selectedUserForReset.name || selectedUserForReset.merchantName}
-          onClose={() => setSelectedUserForReset(null)}
-        />
-      )}
-
-      {/* مودال تعديل التاجر */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-brand-card rounded-2xl w-full max-w-md p-6 shadow-xl border border-brand-border relative text-right">
-            <button
-              onClick={() => setIsEditModalOpen(false)}
-              className="absolute left-4 top-4 text-brand-body/60 hover:text-brand-title cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-
-            <h2 className="text-base font-bold text-brand-title mb-4 flex items-center gap-2">
-              <Store size={18} className="text-brand-secondary" />
-              تعديل بيانات التاجر
-            </h2>
-
-            {feedback.text && (
-              <div
-                className={`p-3 rounded-xl mb-4 text-xs font-medium flex items-center gap-2 ${
-                  feedback.type === 'success'
-                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                    : 'bg-rose-50 text-rose-700 border border-rose-200'
-                }`}
-              >
-                {feedback.type === 'success' && <CheckCircle size={16} />}
-                <span>{feedback.text}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSaveMerchant} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-brand-title mb-1.5">اسم التاجر</label>
-                <input
-                  type="text"
-                  value={editFormData.name}
-                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                  required
-                  className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-brand-title mb-1.5">رقم الهاتف</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={editFormData.phone}
-                    onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
-                    className="w-full text-right px-3.5 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card"
-                  />
-                  <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-body/50" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-brand-title mb-1.5">كلمة المرور</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={editFormData.password}
-                    onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
-                    placeholder="كلمة المرور الخاصة بالتاجر"
-                    className="w-full text-right pr-3.5 pl-10 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-brand-card font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-body/50 hover:text-brand-secondary transition cursor-pointer"
-                    title={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
-                  >
-                    {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 bg-brand-bg text-brand-body rounded-xl text-xs font-medium hover:bg-brand-border/60 transition cursor-pointer"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2 bg-brand-title text-white rounded-xl text-xs font-medium hover:bg-brand-title/90 transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
-                >
-                  {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-                  حفظ التعديلات
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}
