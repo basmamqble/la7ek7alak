@@ -35,7 +35,7 @@ export default function Subscriptions() {
     status: 'active'
   });
 
-  // وصولات الدفع
+  // وصولات الدفع (تمت إضافة حقل transactionId رمز العملية)
   const [receipts, setReceipts] = useState([
     {
       id: 1,
@@ -43,6 +43,7 @@ export default function Subscriptions() {
       ownerName: 'محمد أحمد',
       amount: '50 $',
       plan: 'سنوي',
+      transactionId: 'TRX-985421',
       date: '2026-09-01',
       receiptImg: 'https://via.placeholder.com/400x600?text=Receipt+Sample',
       status: 'approved',
@@ -53,6 +54,7 @@ export default function Subscriptions() {
       ownerName: 'خالد محمود',
       amount: '15 $',
       plan: 'شهري',
+      transactionId: 'TRX-332145',
       date: '2026-08-28',
       receiptImg: 'https://via.placeholder.com/400x600?text=Receipt+Sample',
       status: 'pending',
@@ -158,13 +160,13 @@ export default function Subscriptions() {
 
   // --- الحذف ---
   const handleDeleteSub = (id) => {
-    if (window.confirm('هل أنت تأكد من رغبتك في حذف هذا الاشتراك؟')) {
+    if (window.confirm('هل أنت متأكد من رغبتك في حذف هذا الاشتراك؟')) {
       setSubscriptions(prev => prev.filter(item => item.id !== id));
     }
   };
 
   const handleDeleteReceipt = (id) => {
-    if (window.confirm('هل أنت تأكد من رغبتك في حذف هذا الوصل؟')) {
+    if (window.confirm('هل أنت متأكد من رغبتك في حذف هذا الوصل؟')) {
       setReceipts(prev => prev.filter(item => item.id !== id));
     }
   };
@@ -216,13 +218,14 @@ export default function Subscriptions() {
     setSelectedReceipt(null);
   };
 
-  // تصفية العناصر بناءً على البحث
+  // تصفية العناصر بناءً على البحث (تشمل البحث برمز العملية أيضاً)
   const filterBySearch = (item) => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return true;
     const store = (item.storeName || '').toLowerCase();
     const owner = (item.ownerName || '').toLowerCase();
-    return store.includes(query) || owner.includes(query);
+    const trx = (item.transactionId || '').toLowerCase();
+    return store.includes(query) || owner.includes(query) || trx.includes(query);
   };
 
   return (
@@ -277,7 +280,7 @@ export default function Subscriptions() {
           <Search size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#00537A]" />
           <input
             type="text"
-            placeholder="ابحث باسم المتجر أو اسم المالك..."
+            placeholder="ابحث باسم المتجر، المالك أو رمز العملية..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pr-10 pl-4 py-2 bg-[#A8E8F9]/10 border border-[#A8E8F9]/50 rounded-xl text-xs focus:outline-none focus:border-[#F5A201] focus:bg-white text-[#013C58] placeholder:text-gray-400 transition"
@@ -456,6 +459,7 @@ export default function Subscriptions() {
                   <th className="p-4">صاحب المتجر</th>
                   <th className="p-4">المبلغ</th>
                   <th className="p-4">نوع الخطة</th>
+                  <th className="p-4">رمز العملية</th>
                   <th className="p-4">تاريخ الرفع</th>
                   <th className="p-4">الحالة</th>
                   <th className="p-4 text-center">الإجراءات</th>
@@ -464,7 +468,7 @@ export default function Subscriptions() {
               <tbody className="divide-y divide-[#A8E8F9]/20">
                 {receipts.filter(filterBySearch).length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-8 text-center text-gray-400 font-medium">
+                    <td colSpan={8} className="p-8 text-center text-gray-400 font-medium">
                       لا توجد وصولات مطابقة للبحث
                     </td>
                   </tr>
@@ -528,6 +532,19 @@ export default function Subscriptions() {
                               </select>
                             ) : (
                               <span className="text-gray-600 font-medium">{item.plan}</span>
+                            )}
+                          </td>
+
+                          <td className="p-4">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={editReceiptFormData.transactionId}
+                                onChange={(e) => setEditReceiptFormData({ ...editReceiptFormData, transactionId: e.target.value })}
+                                className="p-1 bg-white border border-[#F5A201] rounded-lg text-xs font-mono w-28 focus:outline-none"
+                              />
+                            ) : (
+                              <span className="text-[#013C58] font-mono font-bold bg-[#A8E8F9]/20 px-2 py-1 rounded">{item.transactionId}</span>
                             )}
                           </td>
 
@@ -654,11 +671,23 @@ export default function Subscriptions() {
               </button>
             </div>
 
+            {/* تفاصيل إضافية للوصل */}
+            <div className="bg-[#A8E8F9]/10 border border-[#A8E8F9]/30 rounded-xl p-3 space-y-2 text-xs text-[#013C58]">
+              <div className="flex justify-between">
+                <span className="text-gray-500">رمز العملية:</span>
+                <span className="font-mono font-bold">{selectedReceipt.transactionId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">المبلغ المدفوع:</span>
+                <span className="font-bold text-[#F5A201]">{selectedReceipt.amount}</span>
+              </div>
+            </div>
+
             <div className="bg-[#A8E8F9]/10 border border-[#A8E8F9]/30 rounded-xl p-3 text-center">
               <img 
                 src={selectedReceipt.receiptImg} 
                 alt="وصل الدفع" 
-                className="max-h-80 mx-auto rounded-lg object-contain shadow-sm border border-[#A8E8F9]/30" 
+                className="max-h-64 mx-auto rounded-lg object-contain shadow-sm border border-[#A8E8F9]/30" 
               />
             </div>
 
@@ -731,7 +760,7 @@ export default function Subscriptions() {
                 <select
                   value={newSubData.plan}
                   onChange={(e) => setNewSubData({ ...newSubData, plan: e.target.value })}
-                  className="w-full p-2 bg-[#A8E8F9]/10 border border-[#A8E8F9]/50 rounded-xl text-xs focus:outline-none focus:border-[#F5A201] focus:bg-white text-[#013C58] transition font-semibold"
+                  className="w-full p-2 bg-[#A8E8F9]/10 border border-[#A8E8F9]/50 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#F5A201] focus:bg-white text-[#013C58] transition"
                 >
                   <option value="أسبوعي">أسبوعي</option>
                   <option value="شهري">شهري</option>
@@ -739,7 +768,7 @@ export default function Subscriptions() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-xs font-bold text-[#013C58] mb-1">تاريخ البداية</label>
                   <input
@@ -761,26 +790,13 @@ export default function Subscriptions() {
                   />
                 </div>
               </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#013C58] mb-1">حالة الاشتراك</label>
-                <select
-                  value={newSubData.status}
-                  onChange={(e) => setNewSubData({ ...newSubData, status: e.target.value })}
-                  className="w-full p-2 bg-[#A8E8F9]/10 border border-[#A8E8F9]/50 rounded-xl text-xs focus:outline-none focus:border-[#F5A201] focus:bg-white text-[#013C58] transition font-semibold"
-                >
-                  <option value="active">نشط</option>
-                  <option value="expiring_soon">ينتهي قريباً</option>
-                  <option value="expired">منتهي</option>
-                </select>
-              </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-[#A8E8F9]/30">
+            <div className="flex justify-end gap-2 pt-2 border-t border-[#A8E8F9]/30">
               <button
                 type="button"
                 onClick={() => setIsAddSubOpen(false)}
-                className="px-4 py-2 bg-[#A8E8F9]/20 text-[#013C58] font-bold rounded-xl text-xs hover:bg-[#A8E8F9]/40 transition cursor-pointer"
+                className="px-4 py-2 bg-gray-100 text-gray-600 font-bold rounded-xl text-xs hover:bg-gray-200 transition cursor-pointer"
               >
                 إلغاء
               </button>
@@ -788,7 +804,7 @@ export default function Subscriptions() {
                 type="submit"
                 className="px-4 py-2 bg-[#F5A201] text-white font-bold rounded-xl text-xs hover:bg-[#d98f00] transition cursor-pointer shadow-sm"
               >
-                إضافة الاشتراك
+                حفظ الاشتراك
               </button>
             </div>
           </form>

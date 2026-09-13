@@ -39,7 +39,7 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center mb-6">
           <img 
-            src="/logo.jpg" 
+            src="/logo.svg" 
             alt="لحّق حالك" 
             className="w-45 h-45 object-contain mx-auto mb-4"
           />

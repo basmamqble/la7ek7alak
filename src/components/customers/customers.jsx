@@ -1,180 +1,151 @@
-import React from 'react';
-import { Mail, Phone, Ban, Trash2, Edit, Save, X, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import CustomersTable from './customersTable';
+import { AlertTriangle, X } from 'lucide-react'; // أيقونات للتحذير والمودال
 
-export default function CustomersTable({
-  customers = [],
-  editingId,
-  editFormData,
-  setEditFormData,
-  updatingId,
-  isSubmitting,
-  onStartEdit,
-  onCancelEdit,
-  onSaveEdit,
-  onOpenStatusConfirm,
-  onDelete,
-}) {
+export default function CustomersPage() {
+  // 1. البيانات الوهمية المطابقة لصورتك
+  const [customers, setCustomers] = useState([
+    { id: 1, name: 'أحمد محمود', email: 'ahmed@example.com', phone: '0599123456', status: 'active' },
+    { id: 2, name: 'سارة علي', email: 'sara@example.com', phone: '0598765432', status: 'active' },
+    { id: 3, name: 'محمد خالد', email: 'mohamed@example.com', phone: '0597112233', status: 'banned' },
+  ]);
+
+  const [editingId, setEditingId] = useState(null);
+  const [editFormData, setEditFormData] = useState({ name: '', email: '', phone: '' });
+  const [updatingId, setUpdatingId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // حالات مودال تأكيد تغيير الحالة
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [selectedCustomerForStatus, setSelectedCustomerForStatus] = useState(null);
+
+  // بدء التعديل
+  const handleStartEdit = (customer) => {
+    setEditingId(customer.id);
+    setEditFormData({
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+  };
+
+  // حفظ التعديل
+  const handleSaveEdit = (id) => {
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setCustomers(customers.map((c) => (c.id === id ? { ...c, ...editFormData } : c)));
+      setEditingId(null);
+      setIsSubmitting(false);
+    }, 400);
+  };
+
+  // حذف زبون
+  const handleDelete = (id) => {
+    setCustomers(customers.filter((c) => c.id !== id));
+  };
+
+  // فتح مودال التأكيد عند الضغط على زر تغيير الحالة (الحظر/النشاط)
+  const handleOpenStatusConfirm = (customer) => {
+    setSelectedCustomerForStatus(customer);
+    setIsStatusModalOpen(true);
+  };
+
+  // تأكيد تغيير الحالة فعلياً
+  const handleConfirmStatusChange = () => {
+    if (!selectedCustomerForStatus) return;
+    
+    const id = selectedCustomerForStatus.id;
+    setUpdatingId(id);
+
+    setTimeout(() => {
+      setCustomers(
+        customers.map((c) => {
+          if (c.id === id) {
+            const newStatus = c.status === 'active' || c.status === 'نشط' ? 'banned' : 'active';
+            return { ...c, status: newStatus };
+          }
+          return c;
+        })
+      );
+      setUpdatingId(null);
+      setIsStatusModalOpen(false);
+      setSelectedCustomerForStatus(null);
+    }, 400);
+  };
+
   return (
-    <div className="bg-brand-card rounded-2xl border border-brand-border shadow-xs overflow-hidden">
-      <table className="w-full text-right border-collapse text-xs table-fixed">
-        <thead>
-          <tr className="bg-brand-bg text-brand-body font-bold border-b border-brand-border">
-            <th className="p-4 w-1/4 text-right">الزبون</th>
-            <th className="p-4 w-1/3 text-right">البريد الإلكتروني</th>
-            <th className="p-4 w-1/4 text-right">رقم الهاتف</th>
-            <th className="p-4 w-1/6 text-center">الحالة</th>
-            <th className="p-4 w-1/4 text-center">الإجراءات</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-brand-border">
-          {customers.length === 0 ? (
-            <tr>
-              <td colSpan="5" className="text-center py-8 text-gray-400">
-                لا يوجد زبائن مطبقين لشروط البحث.
-              </td>
-            </tr>
-          ) : (
-            customers.map((customer) => {
-              const custId = customer.id || customer._id;
-              const isEditing = editingId === custId;
-              const isUpdating = updatingId === custId;
-              const isBanned = customer.status === 'banned' || customer.status === 'محظور';
+    <div className="p-6 bg-brand-bg min-h-screen text-right" dir="rtl">
+      {/* رأس الصفحة */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-xl font-bold text-brand-title">إدارة الزبائن</h1>
+          <p className="text-xs text-brand-body mt-1">عرض وتعديل بيانات حسابات الزبائن المسجلين</p>
+        </div>
+        <button className="bg-brand-primary text-white px-4 py-2 rounded-xl text-xs font-bold hover:opacity-90 transition">
+          + إضافة زبون جديد
+        </button>
+      </div>
 
-              return (
-                <tr key={custId} className="hover:bg-brand-bg/50 transition">
-                  {/* اسم الزبون */}
-                  <td className="p-4 font-bold text-brand-title truncate">
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editFormData.name}
-                        onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                        className="w-full bg-brand-bg px-2.5 py-1.5 rounded-lg border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title"
-                      />
-                    ) : (
-                      customer.name || customer.fullName
-                    )}
-                  </td>
+      {/* الجدول */}
+      <CustomersTable
+        customers={customers}
+        editingId={editingId}
+        editFormData={editFormData}
+        setEditFormData={setEditFormData}
+        updatingId={updatingId}
+        isSubmitting={isSubmitting}
+        onStartEdit={handleStartEdit}
+        onCancelEdit={handleCancelEdit}
+        onSaveEdit={handleSaveEdit}
+        onOpenStatusConfirm={handleOpenStatusConfirm}
+        onDelete={handleDelete}
+      />
 
-                  {/* البريد الإلكتروني */}
-                  <td className="p-4 text-brand-body truncate">
-                    {isEditing ? (
-                      <div className="relative">
-                        <input
-                          type="email"
-                          value={editFormData.email}
-                          onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                          className="w-full bg-brand-bg pr-8 pl-3 py-1.5 rounded-lg border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title text-right"
-                        />
-                        <Mail size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      </div>
-                    ) : (
-                      <span className="inline-flex items-center gap-2">
-                        <Mail size={13} className="text-gray-400 shrink-0" />
-                        <span className="truncate">{customer.email}</span>
-                      </span>
-                    )}
-                  </td>
+      {/* نافذة (Modal) تأكيد تغيير الحالة */}
+      {isStatusModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100 animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-between items-center mb-4">
+              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
+                <AlertTriangle size={20} />
+              </div>
+              <button 
+                onClick={() => setIsStatusModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition"
+              >
+                <X size={18} />
+              </button>
+            </div>
 
-                  {/* رقم الهاتف */}
-                  <td className="p-4 text-brand-body font-mono">
-                    {isEditing ? (
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={editFormData.phone}
-                          onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
-                          className="w-full bg-brand-bg pr-8 pl-3 py-1.5 rounded-lg border border-brand-border focus:outline-none focus:border-brand-secondary text-xs text-brand-title text-right"
-                        />
-                        <Phone size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      </div>
-                    ) : (
-                      <span className="inline-flex items-center gap-2">
-                        <Phone size={13} className="text-gray-400 shrink-0" />
-                        <span dir="ltr" className="text-right">{customer.phone || customer.phoneNumber}</span>
-                      </span>
-                    )}
-                  </td>
+            <h3 className="text-base font-bold text-gray-800 mb-2">تأكيد تغيير حالة الحساب</h3>
+            <p className="text-xs text-gray-500 mb-6 leading-relaxed">
+              هل أنت متأكد من تغيير حالة الزبون <span className="font-bold text-gray-700">"{selectedCustomerForStatus?.name}"</span>؟ 
+              {selectedCustomerForStatus?.status === 'active' ? ' سيتم حظر الحساب ومنعه من استخدام التطبيق.' : ' سيتم إعادة تفعيل الحساب.'}
+            </p>
 
-                  {/* الحالة */}
-                  <td className="p-4 text-center">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold ${
-                        isBanned
-                          ? 'bg-rose-50 text-rose-600'
-                          : 'bg-emerald-50 text-emerald-600'
-                      }`}
-                    >
-                      {isBanned ? 'محظور' : 'نشط'}
-                    </span>
-                  </td>
-
-                  {/* الإجراءات */}
-                  <td className="p-4 text-center">
-                    <div className="flex items-center justify-center gap-1.5">
-                      {isEditing ? (
-                        <>
-                          <button
-                            onClick={() => onSaveEdit(custId)}
-                            disabled={isSubmitting}
-                            className="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium flex items-center gap-1 cursor-pointer disabled:opacity-50"
-                            title="حفظ"
-                          >
-                            {isSubmitting ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
-                            <span>حفظ</span>
-                          </button>
-                          <button
-                            onClick={onCancelEdit}
-                            className="px-2.5 py-1.5 bg-brand-bg text-brand-body rounded-lg hover:bg-brand-border/60 transition font-medium flex items-center gap-1 cursor-pointer"
-                            title="إلغاء"
-                          >
-                            <X size={13} />
-                            <span>إلغاء</span>
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          {/* زر تعديل البيانات المباشر */}
-                          <button
-                            onClick={() => onStartEdit(customer)}
-                            className="p-1.5 text-brand-secondary hover:bg-brand-secondary/10 rounded-lg transition cursor-pointer"
-                            title="تعديل البيانات"
-                          >
-                            <Edit size={15} />
-                          </button>
-
-                          {/* زر تغيير الحالة / الحظر لإظهار المودال */}
-                          {onOpenStatusConfirm && (
-                            <button
-                              onClick={() => onOpenStatusConfirm(customer)}
-                              disabled={isUpdating}
-                              className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition cursor-pointer disabled:opacity-50"
-                              title="تغيير الحالة"
-                            >
-                              {isUpdating ? <Loader2 size={15} className="animate-spin" /> : <Ban size={15} />}
-                            </button>
-                          )}
-
-                          {/* زر الحذف */}
-                          {onDelete && (
-                            <button
-                              onClick={() => onDelete(custId)}
-                              className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition cursor-pointer"
-                              title="حذف"
-                            >
-                              <Trash2 size={15} />
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleConfirmStatusChange}
+                className="flex-1 bg-amber-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-amber-700 transition cursor-pointer"
+              >
+                تأكيد التغيير
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsStatusModalOpen(false)}
+                className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs font-medium hover:bg-gray-200 transition cursor-pointer"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

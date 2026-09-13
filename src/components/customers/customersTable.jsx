@@ -11,7 +11,7 @@ export default function CustomersTable({
   onStartEdit,
   onCancelEdit,
   onSaveEdit,
-  onOpenStatusConfirm, // هذه هي الدالة الخاصة بفتح مودال تأكيد تغيير الحالة
+  onOpenStatusConfirm,
   onDelete,
 }) {
   return (
@@ -136,31 +136,6 @@ export default function CustomersTable({
                         </>
                       ) : (
                         <>
-                          {/* زر تعديل البيانات المباشر */}
-                          <button
-                            type="button"
-                            onClick={() => onStartEdit(customer)}
-                            className="p-1.5 text-brand-secondary hover:bg-brand-secondary/10 rounded-lg transition cursor-pointer"
-                            title="تعديل البيانات"
-                          >
-                            <Edit size={15} />
-                          </button>
-
-                          {/* زر تغيير الحالة / الحظر لإظهار رسالة (مودال) التأكيد */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (onOpenStatusConfirm) {
-                                onOpenStatusConfirm(customer);
-                              }
-                            }}
-                            disabled={isUpdating}
-                            className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition cursor-pointer disabled:opacity-50"
-                            title="تغيير حالة الحساب"
-                          >
-                            {isUpdating ? <Loader2 size={15} className="animate-spin" /> : <Ban size={15} />}
-                          </button>
-
                           {/* زر الحذف */}
                           {onDelete && (
                             <button
@@ -172,6 +147,29 @@ export default function CustomersTable({
                               <Trash2 size={15} />
                             </button>
                           )}
+
+                          {/* زر تغيير الحالة / الحظر */}
+                          {onOpenStatusConfirm && (
+                            <button
+                              type="button"
+                              onClick={() => onOpenStatusConfirm(customer)}
+                              disabled={isUpdating}
+                              className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition cursor-pointer disabled:opacity-50"
+                              title="تغيير حالة الحساب"
+                            >
+                              {isUpdating ? <Loader2 size={15} className="animate-spin" /> : <Ban size={15} />}
+                            </button>
+                          )}
+
+                          {/* زر تعديل البيانات المباشر */}
+                          <button
+                            type="button"
+                            onClick={() => onStartEdit(customer)}
+                            className="p-1.5 text-brand-secondary hover:bg-brand-secondary/10 rounded-lg transition cursor-pointer"
+                            title="تعديل البيانات"
+                          >
+                            <Edit size={15} />
+                          </button>
                         </>
                       )}
                     </div>
