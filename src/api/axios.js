@@ -11,7 +11,7 @@ const API = axios.create({
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
 
-  if (token && !config.url.includes('/login') && !config.url.includes('/register')) {
+  if (token && !config.url.includes('auth/login') && !config.url.includes('auth/register')) {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
@@ -28,8 +28,8 @@ API.interceptors.response.use(
       localStorage.removeItem('adminToken');
       localStorage.removeItem('token');
       
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
+      if (!window.location.pathname.includes('auth/login')) {
+        window.location.href = 'auth/login';
       }
     }
     return Promise.reject(error);
