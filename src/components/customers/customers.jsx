@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import CustomersTable from './customersTable';
-import { AlertTriangle, X, UserPlus } from 'lucide-react';
+import { AlertTriangle, X, UserPlus, Trash2 } from 'lucide-react';
 
 export default function Customers() {
   const [customers, setCustomers] = useState([
@@ -21,6 +21,10 @@ export default function Customers() {
   // حالات مودال إضافة زبون جديد
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newCustomerData, setNewCustomerData] = useState({ name: '', email: '', phone: '' });
+
+  // *** حالات جديدة خاصة بمودال تأكيد الحذف ***
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedCustomerForDelete, setSelectedCustomerForDelete] = useState(null);
 
   // بدء التعديل
   const handleStartEdit = (customer) => {
@@ -46,9 +50,19 @@ export default function Customers() {
     }, 400);
   };
 
-  // حذف زبون
-  const handleDelete = (id) => {
-    setCustomers(customers.filter((c) => c.id !== id));
+  // *** فتح مودال تأكيد الحذف بدل الحذف المباشر ***
+  const handleOpenDeleteConfirm = (customer) => {
+    setSelectedCustomerForDelete(customer);
+    setIsDeleteModalOpen(true);
+  };
+
+  // *** تنفيذ الحذف الفعلي بعد التأكيد ***
+  const handleConfirmDelete = () => {
+    if (!selectedCustomerForDelete) return;
+    
+    setCustomers(customers.filter((c) => c.id !== selectedCustomerForDelete.id));
+    setIsDeleteModalOpen(false);
+    setSelectedCustomerForDelete(null);
   };
 
   // فتح مودال التأكيد عند الضغط على زر تغيير الحالة
@@ -114,7 +128,7 @@ export default function Customers() {
         </button>
       </div>
 
-      {/* الجدول */}
+      {/* الجدول (تم تمرير دالة فتح مودال الحذف بدلاً من الحذف المباشر) */}
       <CustomersTable
         customers={customers}
         editingId={editingId}
@@ -126,7 +140,7 @@ export default function Customers() {
         onCancelEdit={handleCancelEdit}
         onSaveEdit={handleSaveEdit}
         onOpenStatusConfirm={handleOpenStatusConfirm}
-        onDelete={handleDelete}
+        onDelete={handleOpenDeleteConfirm}
       />
 
       {/* نافذة (Modal) إضافة زبون جديد */}
@@ -150,7 +164,7 @@ export default function Customers() {
 
             <form onSubmit={handleAddCustomerSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">اسم الزبون</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">اسم الزبون *</label>
                 <input
                   type="text"
                   required
@@ -199,6 +213,47 @@ export default function Customers() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* *** نافذة (Modal) تأكيد الحذف *** */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100 animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-between items-center mb-4">
+              <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-600">
+                <Trash2 size={20} />
+              </div>
+              <button 
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <h3 className="text-base font-bold text-gray-800 mb-2">تأكيد حذف الزبون</h3>
+            <p className="text-xs text-gray-500 mb-6 leading-relaxed">
+              هل أنت متأكد من رغبتك في حذف الزبون <span className="font-bold text-gray-700">"{selectedCustomerForDelete?.name}"</span> نهائياً؟ لا يمكن التراجع عن هذا الإجراء.
+            </p>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="flex-1 bg-rose-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-rose-700 transition cursor-pointer"
+              >
+                نعم، احذف
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs font-medium hover:bg-gray-200 transition cursor-pointer"
+              >
+                إلغاء
+              </button>
+            </div>
           </div>
         </div>
       )}
