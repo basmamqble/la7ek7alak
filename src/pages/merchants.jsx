@@ -18,11 +18,13 @@ export default function Merchants() {
       setLoading(true);
       setError(null);
 
-      // التأكد من وجود التوكن لتفادي ضياع الجلسة عند Refresh
-      const token = localStorage.getItem('token'); 
-      const response = await API.get('/admin/merchants', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
+     // 1. استخدام التوكن الصحيح من الـ LocalStorage (adminToken أو token)
+  const token = localStorage.getItem('adminToken') || localStorage.getItem('token'); 
+
+  // 2. تغيير مسار الـ API إلى /admin/users ليتوافق مع مسار الجلب المتاح حالياً بالباك إند
+  const response = await API.get('/admin/users', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  });
 
       const data = response.data;
       
