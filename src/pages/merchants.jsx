@@ -5,7 +5,7 @@ import API from '../api/axios';
 
 export default function Merchants() {
   const [merchants, setMerchants] = useState(() => {
-    // 1. محاولة استرجاع البيانات من localStorage فوراً للبدء بها ومنع الشاشة البيضاء عند الـ Refresh
+    // استرجاع البيانات المخبأة فوراً لمنع اختفاء العناصر أو الشاشة البيضاء عند Refresh
     const saved = localStorage.getItem('admin_merchants_cache');
     return saved ? JSON.parse(saved) : [];
   });
@@ -18,29 +18,27 @@ export default function Merchants() {
       setLoading(true);
       setError(null);
 
-     // 1. استخدام التوكن الصحيح من الـ LocalStorage (adminToken أو token)
-  const token = localStorage.getItem('adminToken') || localStorage.getItem('token'); 
-
-  // 2. تغيير مسار الـ API إلى /admin/users ليتوافق مع مسار الجلب المتاح حالياً بالباك إند
-  const response = await API.get('/admin/users', {
-    headers: token ? { Authorization: `Bearer ${token}` } : {}
-  });
+      // جلب التوكن بأي شكل كان مخزناً به
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token'); 
+      const response = await API.get('/admin/users', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
 
       const data = response.data;
       
       let list = [];
       if (Array.isArray(data)) {
         list = data;
+      } else if (Array.isArray(data?.users)) { // مطابقة مع الباك إند الحالي: { count, users }
+        list = data.users;
       } else if (Array.isArray(data?.merchants)) {
         list = data.merchants;
       } else if (Array.isArray(data?.data)) {
         list = data.data;
-      } else if (Array.isArray(data?.result)) {
-        list = data.result;
       }
 
       setMerchants(list);
-      // حفظ النسخة الأخيرة في localStorage للاسترجاع السريع
+      // تحديث التخزين المحلي فور نجاح الـ Request
       localStorage.setItem('admin_merchants_cache', JSON.stringify(list));
     } catch (err) {
       console.error('فشل جلب قائمة التجار من السيرفر:', err);
@@ -55,7 +53,7 @@ export default function Merchants() {
     fetchMerchants();
   }, [fetchMerchants]);
 
-  // إضافة التاجر الجديد تفاؤلياً وإعادة الجلب لضمان التطابق مع الباك إند
+  // إضافة التاجر الجديد تفاؤلياً وإعادة الجلب
   const handleMerchantAdded = (newMerchant) => {
     if (newMerchant) {
       setMerchants((prev) => {
@@ -64,13 +62,11 @@ export default function Merchants() {
         return updated;
       });
     }
-    // إعادة الجلب من الباك لضمان استلام الـ ID الحقيقي والبيانات الكاملة من الداتابيز
     fetchMerchants();
   };
 
   return (
     <div className="space-y-6 bg-brand-bg min-h-screen p-2 font-sans" dir="rtl">
-      {/* عنوان الصفحة الرئيسي */}
       <div>
         <h1 className="text-2xl font-bold text-brand-primary">إدارة التجار والمتاجر</h1>
         <p className="text-xs text-brand-body/70 mt-1">
@@ -78,14 +74,12 @@ export default function Merchants() {
         </p>
       </div>
 
-      {/* رسالة الخطأ إن وجدت */}
       {error && (
         <div className="p-3 bg-red-100 text-red-700 text-sm rounded-lg border border-red-200">
           {error}
         </div>
       )}
 
-      {/* نموذج الإضافة وجدول العرض */}
       <MerchantForm 
         onMerchantAdded={handleMerchantAdded} 
         refreshMerchants={fetchMerchants} 
@@ -97,5 +91,7 @@ export default function Merchants() {
         refreshMerchants={fetchMerchants} 
       />
     </div>
+  );
+}
   );
 }
