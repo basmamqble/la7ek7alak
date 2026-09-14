@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import CustomersTable from './customersTable';
-import { AlertTriangle, X } from 'lucide-react'; // أيقونات للتحذير والمودال
+import { AlertTriangle, X, UserPlus } from 'lucide-react';
 
-export default function CustomersPage() {
-  // 1. البيانات الوهمية المطابقة لصورتك
+export default function Customers() {
   const [customers, setCustomers] = useState([
     { id: 1, name: 'أحمد محمود', email: 'ahmed@example.com', phone: '0599123456', status: 'active' },
     { id: 2, name: 'سارة علي', email: 'sara@example.com', phone: '0598765432', status: 'active' },
@@ -18,6 +17,10 @@ export default function CustomersPage() {
   // حالات مودال تأكيد تغيير الحالة
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [selectedCustomerForStatus, setSelectedCustomerForStatus] = useState(null);
+
+  // حالات مودال إضافة زبون جديد
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newCustomerData, setNewCustomerData] = useState({ name: '', email: '', phone: '' });
 
   // بدء التعديل
   const handleStartEdit = (customer) => {
@@ -48,7 +51,7 @@ export default function CustomersPage() {
     setCustomers(customers.filter((c) => c.id !== id));
   };
 
-  // فتح مودال التأكيد عند الضغط على زر تغيير الحالة (الحظر/النشاط)
+  // فتح مودال التأكيد عند الضغط على زر تغيير الحالة
   const handleOpenStatusConfirm = (customer) => {
     setSelectedCustomerForStatus(customer);
     setIsStatusModalOpen(true);
@@ -77,6 +80,24 @@ export default function CustomersPage() {
     }, 400);
   };
 
+  // حفظ وإضافة الزبون الجديد
+  const handleAddCustomerSubmit = (e) => {
+    e.preventDefault();
+    if (!newCustomerData.name.trim()) return;
+
+    const newCustomer = {
+      id: customers.length > 0 ? Math.max(...customers.map(c => c.id)) + 1 : 1,
+      name: newCustomerData.name,
+      email: newCustomerData.email || 'غير متوفر',
+      phone: newCustomerData.phone || 'غير متوفر',
+      status: 'active',
+    };
+
+    setCustomers([newCustomer, ...customers]);
+    setNewCustomerData({ name: '', email: '', phone: '' });
+    setIsAddModalOpen(false);
+  };
+
   return (
     <div className="p-6 bg-brand-bg min-h-screen text-right" dir="rtl">
       {/* رأس الصفحة */}
@@ -85,8 +106,11 @@ export default function CustomersPage() {
           <h1 className="text-xl font-bold text-brand-title">إدارة الزبائن</h1>
           <p className="text-xs text-brand-body mt-1">عرض وتعديل بيانات حسابات الزبائن المسجلين</p>
         </div>
-        <button className="bg-brand-primary text-white px-4 py-2 rounded-xl text-xs font-bold hover:opacity-90 transition">
-          + إضافة زبون جديد
+        <button 
+          onClick={() => setIsAddModalOpen(true)}
+          className="bg-brand-primary text-white px-4 py-2 rounded-xl text-xs font-bold hover:opacity-90 transition cursor-pointer flex items-center gap-1.5"
+        >
+          <span>+ إضافة زبون جديد</span>
         </button>
       </div>
 
@@ -105,6 +129,80 @@ export default function CustomersPage() {
         onDelete={handleDelete}
       />
 
+      {/* نافذة (Modal) إضافة زبون جديد */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                  <UserPlus size={18} />
+                </div>
+                <h3 className="text-base font-bold text-gray-800">إضافة زبون جديد</h3>
+              </div>
+              <button 
+                onClick={() => setIsAddModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddCustomerSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">اسم الزبون</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="أدخل اسم الزبون الثلاثي"
+                  value={newCustomerData.name}
+                  onChange={(e) => setNewCustomerData({ ...newCustomerData, name: e.target.value })}
+                  className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-brand-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">البريد الإلكتروني</label>
+                <input
+                  type="email"
+                  placeholder="example@domain.com"
+                  value={newCustomerData.email}
+                  onChange={(e) => setNewCustomerData({ ...newCustomerData, email: e.target.value })}
+                  className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-brand-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">رقم الهاتف</label>
+                <input
+                  type="text"
+                  placeholder="059xxxxxxx"
+                  value={newCustomerData.phone}
+                  onChange={(e) => setNewCustomerData({ ...newCustomerData, phone: e.target.value })}
+                  className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-brand-primary"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="submit"
+                  className="flex-1 bg-brand-primary text-white py-2 rounded-xl text-xs font-bold hover:opacity-90 transition cursor-pointer"
+                >
+                  حفظ وإضافة
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs font-medium hover:bg-gray-200 transition cursor-pointer"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* نافذة (Modal) تأكيد تغيير الحالة */}
       {isStatusModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
@@ -115,7 +213,7 @@ export default function CustomersPage() {
               </div>
               <button 
                 onClick={() => setIsStatusModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition"
+                className="text-gray-400 hover:text-gray-600 transition cursor-pointer"
               >
                 <X size={18} />
               </button>
