@@ -20,9 +20,9 @@ export default function Merchants() {
 
       // جلب التوكن بأي شكل كان مخزناً به
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token'); 
-      const response = await API.get('/admin/users', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
+     const response = await API.get('/admin/users', {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined
+});
 
       const data = response.data;
       
