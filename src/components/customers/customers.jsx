@@ -164,7 +164,7 @@ export default function Customers() {
 
             <form onSubmit={handleAddCustomerSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">اسم الزبون *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">اسم الزبون </label>
                 <input
                   type="text"
                   required
