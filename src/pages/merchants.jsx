@@ -8,7 +8,7 @@ export default function Merchants() {
   const [loading, setLoading] = useState(true);
 
   // دالة جلب كافة التجار من قاعدة البيانات
- const fetchMerchants = useCallback(async () => {
+  const fetchMerchants = useCallback(async () => {
     try {
       setLoading(true);
       const response = await API.get('/admin/users');
@@ -17,7 +17,7 @@ export default function Merchants() {
       let list = [];
       if (Array.isArray(data)) {
         list = data;
-      } else if (Array.isArray(data?.users)) { // تمت إضافة هذا السطر ليتطابق مع باك-إند الخاص بك
+      } else if (Array.isArray(data?.users)) {
         list = data.users;
       } else if (Array.isArray(data?.merchants)) {
         list = data.merchants;
@@ -40,7 +40,10 @@ export default function Merchants() {
 
   // إضافة التاجر الجديد تفاؤلياً لأعلى القائمة
   const handleMerchantAdded = (newMerchant) => {
-    setMerchants((prev) => [newMerchant, ...prev]);
+    if (newMerchant) {
+      setMerchants((prev) => [newMerchant, ...prev]);
+    }
+    fetchMerchants();
   };
 
   return (

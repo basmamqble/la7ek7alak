@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import CustomersTable from './customersTable';
 import { AlertTriangle, X, UserPlus, Trash2 } from 'lucide-react';
 
-export default function CustomersPage() {
+export default function Customers() {
   const [customers, setCustomers] = useState([
     { id: 1, name: 'أحمد محمود', email: 'ahmed@example.com', phone: '0599123456', status: 'active' },
     { id: 2, name: 'سارة علي', email: 'sara@example.com', phone: '0598765432', status: 'active' },
@@ -22,7 +22,7 @@ export default function CustomersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newCustomerData, setNewCustomerData] = useState({ name: '', email: '', phone: '' });
 
-  // *** حالات جديدة خاصة بمودال تأكيد الحذف ***
+  // حالات مودال تأكيد الحذف
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedCustomerForDelete, setSelectedCustomerForDelete] = useState(null);
 
@@ -50,13 +50,13 @@ export default function CustomersPage() {
     }, 400);
   };
 
-  // *** فتح مودال تأكيد الحذف بدل الحذف المباشر ***
+  // فتح مودال تأكيد الحذف
   const handleOpenDeleteConfirm = (customer) => {
     setSelectedCustomerForDelete(customer);
     setIsDeleteModalOpen(true);
   };
 
-  // *** تنفيذ الحذف الفعلي بعد التأكيد ***
+  // تنفيذ الحذف الفعلي
   const handleConfirmDelete = () => {
     if (!selectedCustomerForDelete) return;
     
@@ -128,7 +128,7 @@ export default function CustomersPage() {
         </button>
       </div>
 
-      {/* الجدول (تم تمرير دالة فتح مودال الحذف بدلاً من الحذف المباشر) */}
+      {/* الجدول */}
       <CustomersTable
         customers={customers}
         editingId={editingId}
@@ -143,7 +143,7 @@ export default function CustomersPage() {
         onDelete={handleOpenDeleteConfirm}
       />
 
-      {/* نافذة (Modal) إضافة زبون جديد */}
+      {/* نافذة إضافة زبون جديد */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 animate-in fade-in zoom-in duration-200">
@@ -217,7 +217,7 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* *** نافذة (Modal) تأكيد الحذف *** */}
+      {/* نافذة تأكيد الحذف */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100 animate-in fade-in zoom-in duration-200">
@@ -258,7 +258,7 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* نافذة (Modal) تأكيد تغيير الحالة */}
+      {/* نافذة تأكيد تغيير الحالة */}
       {isStatusModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100 animate-in fade-in zoom-in duration-200">
