@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Globe, DollarSign, Share2, ShieldAlert, Save, AlertCircle } from 'lucide-react';
 import API from "../../api/axios";
 import defaultLogo from "../../assets/logo.svg";
-import GeneralSettings from "./GeneralSettings";
-import FinancialSettings from "./FinancialSettings";
-import SocialSettings from "./SocialSettings";
-import SafetySettings from "./SafetySettings";
+import GeneralSettings from "./generalSettings";
+import FinancialSettings from "./financialSettings";
+import SocialSettings from "./socialSettings";
+import SafetySettings from "./safetySettings";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('general');
