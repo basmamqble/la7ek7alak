@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import CustomersTable from './customersTable';
-import { AlertTriangle, X, UserPlus, Trash2, Loader2 } from 'lucide-react';
+import { AlertTriangle, X, UserPlus, Trash2, Loader2, Search } from 'lucide-react';
 import API from '../../api/axios';
 
 export default function Customers() {
@@ -8,30 +8,33 @@ export default function Customers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // حالات البحث والفلترة
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  // حالات التعديل المباشر
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({ name: '', email: '', phone: '' });
   const [updatingId, setUpdatingId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // حالات مودال تأكيد تغيير الحالة
+  // حالات النوافذ المنبثقة (Modals)
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [selectedCustomerForStatus, setSelectedCustomerForStatus] = useState(null);
 
-  // حالات مودال إضافة زبون جديد
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newCustomerData, setNewCustomerData] = useState({ name: '', email: '', phone: '' });
 
-  // حالات مودال تأكيد الحذف
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedCustomerForDelete, setSelectedCustomerForDelete] = useState(null);
 
-  // جلب قائمة الزبائن من قاعدة البيانات
+  // جلب قائمة الزبائن من الباك-إند
   const fetchCustomers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-      const response = await API.get('/admin/customers', {
+      const response = await API.get('/admin/users?role=customer', {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
 
@@ -40,6 +43,8 @@ export default function Customers() {
         setCustomers(data);
       } else if (Array.isArray(data.customers)) {
         setCustomers(data.customers);
+      } else if (Array.isArray(data.users)) {
+        setCustomers(data.users);
       } else {
         setCustomers([]);
       }
@@ -54,6 +59,26 @@ export default function Customers() {
   useEffect(() => {
     fetchCustomers();
   }, [fetchCustomers]);
+
+  // تصفية الزبائن بناءً على البحث والفلتر
+  const filteredCustomers = customers.filter((customer) => {
+    const name = customer.name || customer.fullName || '';
+    const email = customer.email || '';
+    const phone = customer.phone || customer.phoneNumber || '';
+    const isBanned = customer.status === 'banned' || customer.status === 'محظور' || customer.status === 'blocked';
+
+    const matchesSearch =
+      name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      phone.includes(searchTerm);
+
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'active' && !isBanned) ||
+      (statusFilter === 'blocked' && isBanned);
+
+    return matchesSearch && matchesStatus;
+  });
 
   // بدء التعديل
   const handleStartEdit = (customer) => {
@@ -80,7 +105,7 @@ export default function Customers() {
         phone: editFormData.phone,
       };
 
-      await API.put(`/admin/customers/${id}`, payload);
+      await API.put(`/admin/users/${id}`, payload);
       setEditingId(null);
       await fetchCustomers();
     } catch (err) {
@@ -91,7 +116,7 @@ export default function Customers() {
     }
   };
 
-  // فتح مودال تأكيد الحذف
+  // فتح نافذة تأكيد الحذف
   const handleOpenDeleteConfirm = (customer) => {
     setSelectedCustomerForDelete(customer);
     setIsDeleteModalOpen(true);
@@ -101,7 +126,7 @@ export default function Customers() {
   const handleConfirmDelete = async () => {
     if (!selectedCustomerForDelete) return;
     const custId = selectedCustomerForDelete.id || selectedCustomerForDelete._id;
-    
+
     try {
       await API.delete(`/admin/users/${custId}`);
       setIsDeleteModalOpen(false);
@@ -113,13 +138,13 @@ export default function Customers() {
     }
   };
 
-  // فتح مودال التأكيد عند الضغط على زر تغيير الحالة
+  // فتح نافذة التأكيد عند الضغط على تغيير الحالة
   const handleOpenStatusConfirm = (customer) => {
     setSelectedCustomerForStatus(customer);
     setIsStatusModalOpen(true);
   };
 
-  // تأكيد تغيير الحالة فعلياً عبر الـ API
+  // تأكيد تغيير الحالة عبر الـ API
   const handleConfirmStatusChange = async () => {
     if (!selectedCustomerForStatus) return;
 
@@ -128,9 +153,10 @@ export default function Customers() {
 
     try {
       const currentStatus = selectedCustomerForStatus.status;
-      const nextStatus = currentStatus === 'active' || currentStatus === 'نشط' ? 'banned' : 'active';
+      const isBanned = currentStatus === 'banned' || currentStatus === 'blocked' || currentStatus === 'محظور';
+      const nextStatus = isBanned ? 'active' : 'banned';
 
-      await API.patch(`/admin/customers/${custId}/status`, { status: nextStatus });
+      await API.patch(`/admin/users/${custId}/status`, { status: nextStatus });
 
       setIsStatusModalOpen(false);
       setSelectedCustomerForStatus(null);
@@ -143,7 +169,7 @@ export default function Customers() {
     }
   };
 
-  // حفظ وإضافة الزبون الجديد عبر الـ API
+  // إضافة زبون جديد عبر الـ API
   const handleAddCustomerSubmit = async (e) => {
     e.preventDefault();
     if (!newCustomerData.name.trim()) return;
@@ -153,9 +179,10 @@ export default function Customers() {
         name: newCustomerData.name,
         email: newCustomerData.email,
         phone: newCustomerData.phone,
+        role: 'customer'
       };
 
-      await API.post('/admin/customers', payload);
+      await API.post('/admin/users', payload);
 
       setNewCustomerData({ name: '', email: '', phone: '' });
       setIsAddModalOpen(false);
@@ -182,6 +209,30 @@ export default function Customers() {
         </button>
       </div>
 
+      {/* شريط البحث والفلترة */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <input
+            type="text"
+            placeholder="ابحث باسم الزبون، البريد الإلكتروني، أو رقم الهاتف..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pr-9 pl-4 py-2 bg-white border border-brand-border rounded-xl text-brand-title placeholder-gray-400 focus:outline-none focus:border-brand-secondary text-xs shadow-xs"
+          />
+        </div>
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="bg-white border border-brand-border rounded-xl px-4 py-2 text-brand-body focus:outline-none focus:border-brand-secondary text-xs shadow-xs"
+        >
+          <option value="all">جميع الحالات</option>
+          <option value="active">نشط</option>
+          <option value="blocked">محظور</option>
+        </select>
+      </div>
+
       {loading ? (
         <div className="flex items-center justify-center py-16 gap-2 text-brand-body">
           <Loader2 className="animate-spin text-brand-secondary" size={24} />
@@ -193,7 +244,7 @@ export default function Customers() {
         </div>
       ) : (
         <CustomersTable
-          customers={customers}
+          customers={filteredCustomers}
           onToggleStatus={(customer) => {
             setSelectedCustomerForStatus(customer);
             setIsStatusModalOpen(true);
@@ -211,7 +262,7 @@ export default function Customers() {
         />
       )}
 
-      {/* مودال إضافة زبون جديد */}
+      {/* نافذة إضافة زبون جديد */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 animate-in fade-in zoom-in duration-200">
@@ -285,7 +336,7 @@ export default function Customers() {
         </div>
       )}
 
-      {/* مودال تأكيد الحذف */}
+      {/* نافذة تأكيد الحذف */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100 animate-in fade-in zoom-in duration-200">
@@ -326,7 +377,7 @@ export default function Customers() {
         </div>
       )}
 
-      {/* مودال تأكيد تغيير الحالة */}
+      {/* نافذة تأكيد تغيير الحالة */}
       {isStatusModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100 animate-in fade-in zoom-in duration-200">
@@ -345,7 +396,9 @@ export default function Customers() {
             <h3 className="text-base font-bold text-gray-800 mb-2">تأكيد تغيير حالة الحساب</h3>
             <p className="text-xs text-gray-500 mb-6 leading-relaxed">
               هل أنت متأكد من تغيير حالة الزبون <span className="font-bold text-gray-700">"{selectedCustomerForStatus?.name}"</span>؟
-              {selectedCustomerForStatus?.status === 'active' ? ' سيتم حظر الحساب ومنعه من استخدام التطبيق.' : ' سيتم إعادة تفعيل الحساب.'}
+              {selectedCustomerForStatus?.status === 'active' || selectedCustomerForStatus?.status === 'نشط'
+                ? ' سيتم حظر الحساب ومنعه من استخدام التطبيق.'
+                : ' سيتم إعادة تفعيل الحساب.'}
             </p>
 
             <div className="flex items-center gap-2">
