@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { CreditCard, Search, Plus } from 'lucide-react';
-import SubscriptionsTable from './SubscriptionsTable';
-import ReceiptsTable from './ReceiptsTable';
-import AddSubscriptionModal from './AddSubscriptionModal';
+import SubscriptionsTable from './subscriptionsTable';
+import ReceiptsTable from './receiptsTable';
+import AddSubscriptionModal from './addSubscriptionModal';
 
 export default function Subscriptions() {
   const [activeTab, setActiveTab] = useState('subscriptions'); // receipts | subscriptions
