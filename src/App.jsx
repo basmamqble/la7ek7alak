@@ -12,10 +12,10 @@ import Merchants from './pages/merchants';
 import Stories from './pages/stories';
 import Categories from './pages/categories';
 import Reports from './pages/reports';
-import Settings from "./components/settings/Settings";
-import Customers from "./components/customers/customers.jsx";
+import Settings from "./components/settings/settings";
+import Customers from "./components/customers/customers";
 import Notifications from './pages/Notifications';
-import Subscriptions from "./components/subscriptions/Subscriptions.jsx";
+import Subscriptions from "./components/subscriptions/Subscriptions";
 function App() {
   return (
     <BrowserRouter>
