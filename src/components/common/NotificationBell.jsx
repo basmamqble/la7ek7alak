@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bell, Check, ShoppingBag, CreditCard, UserPlus, AlertTriangle, Settings, ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // 1. استيراد useNavigate
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate(); // 2. تهيئة الـ navigate
 
   // إغلاق النافذة عند الضغط خارجها
   useEffect(() => {
@@ -15,6 +17,12 @@ export default function NotificationBell() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // الانتقال لصفحة كافة الإشعارات
+  const handleViewAll = () => {
+    setIsOpen(false); // إغلاق القائمة المنبثقة
+    navigate('/notifications'); // عدّلي المسار ليتطابق مع مسار صفحة الإشعارات في الـ Router لديك
+  };
 
   // بيانات إشعارات تجريبية
   const notifications = [
@@ -93,9 +101,12 @@ export default function NotificationBell() {
             })}
           </div>
 
-          {/* أسفل القائمة */}
+          {/* أسفل القائمة - ربط الزر بـ handleViewAll */}
           <div className="p-3 border-t border-gray-100 bg-gray-50/50 text-center">
-            <button className="text-xs font-bold text-brand-primary hover:text-brand-primary/80 transition flex items-center justify-center gap-1 w-full cursor-pointer">
+            <button 
+              onClick={handleViewAll}
+              className="text-xs font-bold text-brand-primary hover:text-brand-primary/80 transition flex items-center justify-center gap-1 w-full cursor-pointer"
+            >
               <span>عرض كافة الإشعارات</span>
               <ChevronLeft size={14} />
             </button>
