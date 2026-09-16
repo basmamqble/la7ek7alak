@@ -13,6 +13,7 @@ export default function CustomersTable({
   onSaveEdit,
   onOpenStatusConfirm,
   onDelete,
+  onToggleStatus
 }) {
   return (
     <div className="bg-brand-card rounded-2xl border border-brand-border shadow-xs overflow-hidden">
@@ -98,12 +99,12 @@ export default function CustomersTable({
 
                   {/* الحالة */}
                   <td className="p-4 text-center">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold ${
-                        isBanned
-                          ? 'bg-rose-50 text-rose-600'
-                          : 'bg-emerald-50 text-emerald-600'
+                    <span 
+                      onClick={() => onToggleStatus && onToggleStatus(customer)}
+                      className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold cursor-pointer transition-all hover:opacity-80 ${
+                        isBanned ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
                       }`}
+                      title="انقر لتغيير الحالة"
                     >
                       {isBanned ? 'محظور' : 'نشط'}
                     </span>
