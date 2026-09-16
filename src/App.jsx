@@ -15,7 +15,7 @@ import Reports from './pages/reports';
 import Settings from "./components/settings/settings";
 import Customers from "./components/customers/customers";
 import Notifications from './pages/Notifications';
-import Subscriptions from "./components/subscriptions/Subscriptions";
+import Subscriptions from "./components/subscriptions/subscriptions";
 function App() {
   return (
     <BrowserRouter>
