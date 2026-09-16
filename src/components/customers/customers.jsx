@@ -34,7 +34,9 @@ export default function Customers() {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-      const response = await API.get('/admin/users?role=customer', {
+      
+      // إرجاع الـ Endpoint الصحيح الخاص بالباك إند
+      const response = await API.get('/admin/customers', {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
 
@@ -60,7 +62,7 @@ export default function Customers() {
     fetchCustomers();
   }, [fetchCustomers]);
 
-  // تصفية الزبائن بناءً على البحث والفلتر
+  // تصفية الزبائن بداخل الفرونت إند بناءً على البحث والفلتر
   const filteredCustomers = customers.filter((customer) => {
     const name = customer.name || customer.fullName || '';
     const email = customer.email || '';
@@ -105,7 +107,7 @@ export default function Customers() {
         phone: editFormData.phone,
       };
 
-      await API.put(`/admin/users/${id}`, payload);
+      await API.put(`/admin/customers/${id}`, payload);
       setEditingId(null);
       await fetchCustomers();
     } catch (err) {
@@ -128,7 +130,7 @@ export default function Customers() {
     const custId = selectedCustomerForDelete.id || selectedCustomerForDelete._id;
 
     try {
-      await API.delete(`/admin/users/${custId}`);
+      await API.delete(`/admin/customers/${custId}`);
       setIsDeleteModalOpen(false);
       setSelectedCustomerForDelete(null);
       await fetchCustomers();
@@ -156,7 +158,7 @@ export default function Customers() {
       const isBanned = currentStatus === 'banned' || currentStatus === 'blocked' || currentStatus === 'محظور';
       const nextStatus = isBanned ? 'active' : 'banned';
 
-      await API.patch(`/admin/users/${custId}/status`, { status: nextStatus });
+      await API.patch(`/admin/customers/${custId}/status`, { status: nextStatus });
 
       setIsStatusModalOpen(false);
       setSelectedCustomerForStatus(null);
@@ -179,10 +181,9 @@ export default function Customers() {
         name: newCustomerData.name,
         email: newCustomerData.email,
         phone: newCustomerData.phone,
-        role: 'customer'
       };
 
-      await API.post('/admin/users', payload);
+      await API.post('/admin/customers', payload);
 
       setNewCustomerData({ name: '', email: '', phone: '' });
       setIsAddModalOpen(false);
