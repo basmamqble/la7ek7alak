@@ -120,25 +120,40 @@ export default function Customers() {
 
   // فتح نافذة تأكيد الحذف
   const handleOpenDeleteConfirm = (customer) => {
-    setSelectedCustomerForDelete(customer);
-    setIsDeleteModalOpen(true);
-  };
+  console.log("Customer object received:", customer); // للتأكد من هيكل البيانات في الـ Console
+  setSelectedCustomerForDelete(customer);
+  setIsDeleteModalOpen(true);
+};
 
-  // تنفيذ الحذف الفعلي عبر الـ API
-  const handleConfirmDelete = async () => {
-    if (!selectedCustomerForDelete) return;
-    const custId = selectedCustomerForDelete.id || selectedCustomerForDelete._id;
+// حذف زبون
+const handleConfirmDelete = async () => {
+  console.log("Full Customer Object:", selectedCustomerForDelete);
 
-    try {
-      await API.delete(`/admin/customers/${custId}`);
-      setIsDeleteModalOpen(false);
-      setSelectedCustomerForDelete(null);
-      await fetchCustomers();
-    } catch (err) {
-      console.error('خطأ أثناء حذف الزبون:', err);
-      alert(err.response?.data?.message || 'فشل حذف الزبون');
-    }
-  };
+  // استخراج أول مفتاح أو استخدام القيم الشائعة تلقائياً
+  const keys = Object.keys(selectedCustomerForDelete || {});
+  const custId = selectedCustomerForDelete?.id || 
+                 selectedCustomerForDelete?._id || 
+                 selectedCustomerForDelete?.customerId || 
+                 selectedCustomerForDelete?.userId ||
+                 (keys.length > 0 ? selectedCustomerForDelete[keys[0]] : null); // أخذ أول قيمة من الكائن كاحتياط
+
+  if (!custId) {
+    alert(`خطأ: الكائن فارغ تماماً ولا يحتوي على بيانات.`);
+    return;
+  }
+
+  try {
+    await API.delete(`/admin/customers/${custId}`);
+    setIsDeleteModalOpen(false);
+    setSelectedCustomerForDelete(null);
+    await fetchCustomers();
+  } catch (err) {
+    console.error('خطأ أثناء حذف الزبون:', err);
+    alert(err.response?.data?.message || err.response?.data?.error || 'فشل حذف الزبون');
+  }
+};
+
+
 
   // فتح نافذة التأكيد عند الضغط على تغيير الحالة
   const handleOpenStatusConfirm = (customer) => {
