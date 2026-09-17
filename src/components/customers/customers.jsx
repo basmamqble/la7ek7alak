@@ -127,32 +127,42 @@ export default function Customers() {
 
 // حذف زبون
 const handleConfirmDelete = async () => {
-  console.log("Full Customer Object:", selectedCustomerForDelete);
-
-  // استخراج أول مفتاح أو استخدام القيم الشائعة تلقائياً
-  const keys = Object.keys(selectedCustomerForDelete || {});
-  const custId = selectedCustomerForDelete?.id || 
-                 selectedCustomerForDelete?._id || 
-                 selectedCustomerForDelete?.customerId || 
-                 selectedCustomerForDelete?.userId ||
-                 (keys.length > 0 ? selectedCustomerForDelete[keys[0]] : null); // أخذ أول قيمة من الكائن كاحتياط
+  const custId = selectedCustomerForDelete?.id;
 
   if (!custId) {
-    alert(`خطأ: الكائن فارغ تماماً ولا يحتوي على بيانات.`);
+    alert("خطأ: المعرف غير موجود");
     return;
   }
 
   try {
+    // 1. إرسال طلب الحذف للباك-إند
     await API.delete(`/admin/customers/${custId}`);
+
+    // 2. إغلاق النافذة وتفريغ المتغير
     setIsDeleteModalOpen(false);
     setSelectedCustomerForDelete(null);
+
+    // 3. جلب القائمة المحدثة للزبائن
     await fetchCustomers();
+    
   } catch (err) {
-    console.error('خطأ أثناء حذف الزبون:', err);
-    alert(err.response?.data?.message || err.response?.data?.error || 'فشل حذف الزبون');
+    console.error("خطأ أثناء حذف الزبون:", err);
+    
+    // تجاهل خطأ 404 إذا كان السجل قد حُذف مسبقاً لكي لا يزعج المستخدم
+    if (err.response?.status === 404) {
+      setIsDeleteModalOpen(false);
+      setSelectedCustomerForDelete(null);
+      await fetchCustomers();
+      return;
+    }
+
+    alert(
+      err.response?.data?.message || 
+      err.response?.data?.error || 
+      "فشل حذف الزبون"
+    );
   }
 };
-
 
 
   // فتح نافذة التأكيد عند الضغط على تغيير الحالة
