@@ -99,11 +99,10 @@ export default function CustomersTable({
 
                   {/* الحالة */}
                   <td className="p-4 text-center">
-                    <span 
+                    <span
                       onClick={() => onToggleStatus && onToggleStatus(customer)}
-                      className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold cursor-pointer transition-all hover:opacity-80 ${
-                        isBanned ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
-                      }`}
+                      className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold cursor-pointer transition-all hover:opacity-80 ${isBanned ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
+                        }`}
                       title="انقر لتغيير الحالة"
                     >
                       {isBanned ? 'محظور' : 'نشط'}
@@ -141,7 +140,7 @@ export default function CustomersTable({
                           {onDelete && (
                             <button
                               type="button"
-                              onClick={() => onDelete(custId)}
+                              onClick={() => onDelete(customer || item || row)} // تأكد من تمرير item (أو customer حسب المتغير المتاح في مصفوفة الجدول لديك)
                               className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition cursor-pointer"
                               title="حذف"
                             >
