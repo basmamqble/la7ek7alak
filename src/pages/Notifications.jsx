@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Bell, 
   CheckCheck, 
@@ -11,78 +11,68 @@ import {
   CreditCard
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import API from '../api/axios'; // استيراد إعدادات الاتصال بالسيرفر الأساسية لديك
 
 export default function Notifications() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState('all'); // all | unread | customers | stories | report | subscription | system
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: 'تم نشر ستوري جديدة',
-      desc: 'قام متجر "القدس للتسوق" بنشر ستوري عرض جديد وهي متاحة الآن لمدة 24 ساعة.',
-      time: 'منذ 3 دقائق',
-      isRead: false,
-      type: 'story',
-      link: '/stories'
-    },
-    {
-      id: 2,
-      title: 'تم رفع وصل دفع جديد',
-      desc: 'قام متجر "الأناقة" برفع وصل دفع جديد لتجديد الاشتراك الشهري.',
-      time: 'منذ 12 دقيقة',
-      isRead: false,
-      type: 'subscription',
-      link: '/subscriptions'
-    },
-    {
-      id: 3,
-      title: 'انضمام زبون جديد للمنصة',
-      desc: 'قام مستخدم جديد (أحمد علي) بإنشاء حساب زبون وتأكيد رقم الجوال.',
-      time: 'منذ 15 دقيقة',
-      isRead: false,
-      type: 'customer',
-      link: '/customers'
-    },
-    {
-      id: 4,
-      title: 'تم تقديم بلاغ جديد على عرض',
-      desc: 'تم الإبلاغ عن ستوري خاصة بمحل "الأمل" بسبب محتوى مخالف لشروط الاستخدام.',
-      time: 'منذ ساعة',
-      isRead: false,
-      type: 'report',
-      link: '/reports'
-    },
-    {
-      id: 5,
-      title: 'تم تحديث إعدادات النظام',
-      desc: 'تم إكمال النسخ الاحتياطي التلقائي لقاعدة البيانات بنجاح.',
-      time: 'منذ يومين',
-      isRead: true,
-      type: 'system',
-      link: '/settings'
-    },
-  ]);
+  // جلب الإشعارات حقيجيًا من السيرفر عند تحميل الصفحة
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
-  const handleNotificationClick = (item) => {
-    // تعليم الإشعار كمشاهد
-    setNotifications(prev =>
-      prev.map(n => (n.id === item.id ? { ...n, isRead: true } : n))
-    );
-
-    // الانتقال للرابط المرتبط إن وجد
-    if (item.link) {
-      navigate(item.link);
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await API.get('/notifications');
+      // استقبال البيانات من المسار الجديد الذي أضفته للسيرفر
+      setNotifications(response.data.notifications || []);
+    } catch (error) {
+      console.error('فشل في جلب الإشعارات:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+  const handleNotificationClick = async (item) => {
+    try {
+      // إرسال طلب للسيرفر لتحديث حالة الإشعار إلى مقروء إذا لم يكن مقروءاً
+      if (!item.isRead) {
+        await API.patch(`/notifications/${item.id}/read`);
+        setNotifications(prev =>
+          prev.map(n => (n.id === item.id ? { ...n, isRead: true } : n))
+        );
+      }
+
+      // الانتقال للرابط المرتبط إن وجد
+      if (item.link) {
+        navigate(item.link);
+      }
+    } catch (error) {
+      console.error('فشل في تحديث حالة الإشعار:', error);
+    }
   };
 
-  const deleteNotification = (e, id) => {
+  const markAllAsRead = async () => {
+    try {
+      await API.patch('/notifications/read-all');
+      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error('فشل في تحديد الكل كمقروء:', error);
+    }
+  };
+
+  const deleteNotification = async (e, id) => {
     e.stopPropagation();
-    setNotifications(notifications.filter(n => n.id !== id));
+    try {
+      await API.delete(`/notifications/${id}`);
+      setNotifications(notifications.filter(n => n.id !== id));
+    } catch (error) {
+      console.error('فشل في حذف الإشعار:', error);
+    }
   };
 
   const filteredNotifications = notifications.filter(n => {
@@ -208,7 +198,11 @@ export default function Notifications() {
 
       {/* قائمة الإشعارات */}
       <div className="space-y-3">
-        {filteredNotifications.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-14 bg-brand-card rounded-2xl border border-brand-border">
+            <p className="text-sm text-brand-body/70 font-medium">جاري تحميل الإشعارات...</p>
+          </div>
+        ) : filteredNotifications.length > 0 ? (
           filteredNotifications.map((item) => (
             <div
               key={item.id}
