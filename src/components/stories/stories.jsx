@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  BookOpen, 
-  Clock, 
-  Eye, 
-  Trash2, 
-  Store, 
-  Search, 
-  MapPin 
-} from 'lucide-react';
+import { BookOpen, Search, MapPin } from 'lucide-react';
+import StoryCard from './storyCard';
+import DeleteStoryModal from './deleteStoryModal';
 
 // بيانات تجريبية مع المناطق الفعلية وثوانٍ متبقية حقيقية
 const initialStories = [
@@ -52,7 +46,6 @@ const initialStories = [
   }
 ];
 
-// قائمة المناطق الفعلية
 const regions = [
   "الكل",
   "شمال غزة",
@@ -70,7 +63,9 @@ export default function Stories() {
   const [selectedRegion, setSelectedRegion] = useState('الكل'); 
   const [searchQuery, setSearchQuery] = useState('');
 
-  // تشغيل التايمر الحقيقي (ينقص ثانية كل ثانية)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [storyToDelete, setStoryToDelete] = useState(null);
+
   useEffect(() => {
     const timerInterval = setInterval(() => {
       setStories(prevStories => 
@@ -86,7 +81,6 @@ export default function Stories() {
     return () => clearInterval(timerInterval);
   }, []);
 
-  // دالة تحويل الثواني إلى صيغة وقت نصية (HH:MM:SS)
   const formatTime = (totalSeconds) => {
     if (totalSeconds <= 0) return "انتهى الوقت";
     const hours = Math.floor(totalSeconds / 3600);
@@ -95,11 +89,19 @@ export default function Stories() {
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   };
 
-  const handleDeleteStory = (id) => {
-    setStories(stories.filter(story => story.id !== id));
+  const confirmDelete = (story) => {
+    setStoryToDelete(story);
+    setIsModalOpen(true);
   };
 
-  // تصفية القصص بناءً على البحث، الحالة، والمنطقة المحددة
+  const handleDeleteStory = () => {
+    if (storyToDelete) {
+      setStories(stories.filter(story => story.id !== storyToDelete.id));
+      setIsModalOpen(false);
+      setStoryToDelete(null);
+    }
+  };
+
   const filteredStories = stories.filter(story => {
     const matchesSearch = story.merchantName.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           story.content.toLowerCase().includes(searchQuery.toLowerCase());
@@ -113,7 +115,7 @@ export default function Stories() {
   });
 
   return (
-    <div className="space-y-6 bg-brand-bg min-h-screen p-6" dir="rtl">
+    <div className="space-y-6 bg-brand-bg min-h-screen p-6 relative" dir="rtl">
       {/* رأس الصفحة */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-gradient-to-l from-brand-primary to-slate-900 p-6 rounded-3xl text-white shadow-lg">
         <div>
@@ -134,8 +136,6 @@ export default function Stories() {
 
       {/* شريط البحث وأزرار تصفية الحالة */}
       <div className="bg-brand-card p-4 rounded-3xl border border-brand-border shadow-sm flex flex-col lg:flex-row items-center justify-between gap-4">
-        
-        {/* خانة البحث */}
         <div className="relative w-full lg:w-80">
           <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-body/60" size={18} />
           <input 
@@ -147,7 +147,6 @@ export default function Stories() {
           />
         </div>
 
-        {/* أزرار تصفية الحالة */}
         <div className="flex items-center gap-2 overflow-x-auto w-full lg:w-auto pb-1 lg:pb-0">
           <button 
             onClick={() => setFilter('all')}
@@ -176,7 +175,7 @@ export default function Stories() {
         </div>
       </div>
 
-      {/* شريط فلاتر المناطق بتصميم أزرار (Pills) أنيقة بدل القائمة المنسدلة */}
+      {/* شريط فلاتر المناطق */}
       <div className="bg-brand-card p-3.5 rounded-3xl border border-brand-border shadow-sm flex items-center gap-2 overflow-x-auto">
         <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-brand-body font-bold shrink-0">
           <MapPin size={15} className="text-brand-secondary" />
@@ -203,56 +202,12 @@ export default function Stories() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredStories.length > 0 ? (
           filteredStories.map((story) => (
-            <div 
+            <StoryCard 
               key={story.id} 
-              className="bg-brand-card rounded-3xl border border-brand-border shadow-sm overflow-hidden flex flex-col justify-between transition hover:shadow-md"
-            >
-              {/* جزء الصورة والتايمر الحي */}
-              <div className="relative h-48 w-full overflow-hidden bg-slate-900">
-                <img 
-                  src={story.imageUrl} 
-                  alt={story.merchantName} 
-                  className="w-full h-full object-cover opacity-90"
-                />
-                
-                {/* التايمر التنازلي الحي الفعال */}
-                <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-white text-[11px] font-bold flex items-center gap-1.5 border border-white/15 shadow-lg">
-                  <Clock size={12} className="text-amber-400 animate-pulse" />
-                  <span dir="ltr" className="tracking-wider">متبقي {formatTime(story.timeLeftSeconds)}</span>
-                </div>
-              </div>
-
-              {/* تفاصيل العرض والمتجر */}
-              <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                <div className="space-y-1.5 text-center">
-                  <h3 className="font-bold text-brand-primary text-sm">{story.content}</h3>
-                  <div className="flex items-center justify-center gap-1.5 text-xs text-brand-body">
-                    <Store size={14} className="text-brand-secondary" />
-                    <span className="font-semibold">{story.merchantName}</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-1 text-[11px] text-brand-body/70">
-                    <MapPin size={12} />
-                    <span>{story.locationDetail}</span>
-                  </div>
-                </div>
-
-                {/* المشاهدات */}
-                <div className="flex items-center justify-center gap-1 text-xs text-brand-body/80 pt-2 border-t border-brand-border/60">
-                  <Eye size={14} className="text-brand-secondary" />
-                  <span>{story.views} مشاهدة الحالية</span>
-                </div>
-
-                {/* زر حذف / تجميد القصة */}
-                <div className="pt-2">
-                  <button 
-                    onClick={() => handleDeleteStory(story.id)}
-                    className="w-full flex items-center justify-center gap-1.5 py-2 px-4 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white text-xs font-bold rounded-2xl border border-rose-200 transition cursor-pointer shadow-sm"
-                  >
-                    <Trash2 size={14} /> حذف / تجميد الـ Story المخالفة
-                  </button>
-                </div>
-              </div>
-            </div>
+              story={story} 
+              formatTime={formatTime} 
+              onDeleteClick={confirmDelete} 
+            />
           ))
         ) : (
           <div className="col-span-full py-12 text-center bg-brand-card rounded-3xl border border-brand-border">
@@ -260,6 +215,14 @@ export default function Stories() {
           </div>
         )}
       </div>
+
+      {/* نافذة تأكيد الحذف */}
+      <DeleteStoryModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleDeleteStory}
+        story={storyToDelete}
+      />
     </div>
   );
 }

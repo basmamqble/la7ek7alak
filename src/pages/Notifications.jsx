@@ -1,88 +1,78 @@
-import React, { useState } from 'react';
-import { 
-  Bell, 
-  CheckCheck, 
-  Trash2, 
-  UserPlus, 
-  Flame, 
-  AlertTriangle, 
-  ShieldCheck, 
+import React, { useState, useEffect } from 'react';
+import {
+  Bell,
+  CheckCheck,
+  Trash2,
+  UserPlus,
+  Flame,
+  AlertTriangle,
+  ShieldCheck,
   ArrowRight,
   CreditCard
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import API from '../api/axios'; // استيراد إعدادات الاتصال بالسيرفر الأساسية لديك
 
 export default function Notifications() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState('all'); // all | unread | customers | stories | report | subscription | system
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: 'تم نشر ستوري جديدة',
-      desc: 'قام متجر "القدس للتسوق" بنشر ستوري عرض جديد وهي متاحة الآن لمدة 24 ساعة.',
-      time: 'منذ 3 دقائق',
-      isRead: false,
-      type: 'story',
-      link: '/stories'
-    },
-    {
-      id: 2,
-      title: 'تم رفع وصل دفع جديد',
-      desc: 'قام متجر "الأناقة" برفع وصل دفع جديد لتجديد الاشتراك الشهري.',
-      time: 'منذ 12 دقيقة',
-      isRead: false,
-      type: 'subscription',
-      link: '/subscriptions'
-    },
-    {
-      id: 3,
-      title: 'انضمام زبون جديد للمنصة',
-      desc: 'قام مستخدم جديد (أحمد علي) بإنشاء حساب زبون وتأكيد رقم الجوال.',
-      time: 'منذ 15 دقيقة',
-      isRead: false,
-      type: 'customer',
-      link: '/customers'
-    },
-    {
-      id: 4,
-      title: 'تم تقديم بلاغ جديد على عرض',
-      desc: 'تم الإبلاغ عن ستوري خاصة بمحل "الأمل" بسبب محتوى مخالف لشروط الاستخدام.',
-      time: 'منذ ساعة',
-      isRead: false,
-      type: 'report',
-      link: '/reports'
-    },
-    {
-      id: 5,
-      title: 'تم تحديث إعدادات النظام',
-      desc: 'تم إكمال النسخ الاحتياطي التلقائي لقاعدة البيانات بنجاح.',
-      time: 'منذ يومين',
-      isRead: true,
-      type: 'system',
-      link: '/settings'
-    },
-  ]);
+  // جلب الإشعارات حقيجيًا من السيرفر عند تحميل الصفحة
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
-  const handleNotificationClick = (item) => {
-    // تعليم الإشعار كمشاهد
-    setNotifications(prev =>
-      prev.map(n => (n.id === item.id ? { ...n, isRead: true } : n))
-    );
-
-    // الانتقال للرابط المرتبط إن وجد
-    if (item.link) {
-      navigate(item.link);
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await API.get('/notifications');
+      // استقبال البيانات من المسار الجديد الذي أضفته للسيرفر
+      setNotifications(response.data.notifications || []);
+    } catch (error) {
+      console.error('فشل في جلب الإشعارات:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+  const handleNotificationClick = async (item) => {
+    try {
+      // إرسال طلب للسيرفر لتحديث حالة الإشعار إلى مقروء إذا لم يكن مقروءاً
+      if (!item.isRead) {
+        await API.patch(`/notifications/${item.id}/read`);
+        setNotifications(prev =>
+          prev.map(n => (n.id === item.id ? { ...n, isRead: true } : n))
+        );
+      }
+
+      // الانتقال للرابط المرتبط إن وجد
+      if (item.link) {
+        navigate(item.link);
+      }
+    } catch (error) {
+      console.error('فشل في تحديث حالة الإشعار:', error);
+    }
   };
 
-  const deleteNotification = (e, id) => {
+  const markAllAsRead = async () => {
+    try {
+      await API.patch('/notifications/read-all');
+      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error('فشل في تحديد الكل كمقروء:', error);
+    }
+  };
+
+  const deleteNotification = async (e, id) => {
     e.stopPropagation();
-    setNotifications(notifications.filter(n => n.id !== id));
+    try {
+      await API.delete(`/notifications/${id}`);
+      setNotifications(notifications.filter(n => n.id !== id));
+    } catch (error) {
+      console.error('فشل في حذف الإشعار:', error);
+    }
   };
 
   const filteredNotifications = notifications.filter(n => {
@@ -146,61 +136,55 @@ export default function Notifications() {
       <div className="flex items-center gap-2 border-b border-brand-border pb-3 overflow-x-auto">
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            filter === 'all'
+          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${filter === 'all'
               ? 'bg-brand-secondary text-white shadow-sm'
               : 'bg-brand-card text-brand-body hover:bg-brand-bg border border-brand-border'
-          }`}
+            }`}
         >
           الكل ({notifications.length})
         </button>
         <button
           onClick={() => setFilter('unread')}
-          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            filter === 'unread'
+          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${filter === 'unread'
               ? 'bg-brand-secondary text-white shadow-sm'
               : 'bg-brand-card text-brand-body hover:bg-brand-bg border border-brand-border'
-          }`}
+            }`}
         >
           غير المقروءة ({unreadCount})
         </button>
         <button
           onClick={() => setFilter('stories')}
-          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            filter === 'stories'
+          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${filter === 'stories'
               ? 'bg-brand-secondary text-white shadow-sm'
               : 'bg-brand-card text-brand-body hover:bg-brand-bg border border-brand-border'
-          }`}
+            }`}
         >
           الستوريات المنشورة
         </button>
         <button
           onClick={() => setFilter('subscription')}
-          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            filter === 'subscription'
+          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${filter === 'subscription'
               ? 'bg-brand-secondary text-white shadow-sm'
               : 'bg-brand-card text-brand-body hover:bg-brand-bg border border-brand-border'
-          }`}
+            }`}
         >
           الوصولات والاشتراكات
         </button>
         <button
           onClick={() => setFilter('customers')}
-          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            filter === 'customers'
+          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${filter === 'customers'
               ? 'bg-brand-secondary text-white shadow-sm'
               : 'bg-brand-card text-brand-body hover:bg-brand-bg border border-brand-border'
-          }`}
+            }`}
         >
           الزبائن الجدد
         </button>
         <button
           onClick={() => setFilter('report')}
-          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            filter === 'report'
+          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${filter === 'report'
               ? 'bg-brand-secondary text-white shadow-sm'
               : 'bg-brand-card text-brand-body hover:bg-brand-bg border border-brand-border'
-          }`}
+            }`}
         >
           البلاغات
         </button>
@@ -208,23 +192,25 @@ export default function Notifications() {
 
       {/* قائمة الإشعارات */}
       <div className="space-y-3">
-        {filteredNotifications.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-14 bg-brand-card rounded-2xl border border-brand-border">
+            <p className="text-sm text-brand-body/70 font-medium">جاري تحميل الإشعارات...</p>
+          </div>
+        ) : filteredNotifications.length > 0 ? (
           filteredNotifications.map((item) => (
             <div
               key={item.id}
               onClick={() => handleNotificationClick(item)}
-              className={`p-4 rounded-2xl border transition-all flex items-start justify-between gap-4 cursor-pointer hover:shadow-md ${
-                !item.isRead
+              className={`p-4 rounded-2xl border transition-all flex items-start justify-between gap-4 cursor-pointer hover:shadow-md ${!item.isRead
                   ? 'bg-brand-card border-brand-secondary/40 shadow-sm'
                   : 'bg-brand-bg/60 border-brand-border'
-              }`}
+                }`}
             >
               <div className="flex items-start gap-3.5">
                 <div className="flex items-center gap-2 shrink-0 mt-0.5">
                   <span
-                    className={`w-2 h-2 rounded-full ${
-                      !item.isRead ? 'bg-brand-secondary' : 'bg-transparent'
-                    }`}
+                    className={`w-2 h-2 rounded-full ${!item.isRead ? 'bg-brand-secondary' : 'bg-transparent'
+                      }`}
                   />
                   <div className="p-2 rounded-xl bg-brand-card border border-brand-border shadow-xs">
                     {getNotificationIcon(item.type)}
@@ -233,14 +219,15 @@ export default function Notifications() {
 
                 <div className="space-y-1">
                   <h3
-                    className={`text-sm ${
-                      !item.isRead ? 'font-bold text-brand-primary' : 'font-semibold text-brand-body'
-                    }`}
+                    className={`text-sm ${!item.isRead ? 'font-bold text-brand-primary' : 'font-semibold text-brand-body'
+                      }`}
                   >
                     {item.title}
                   </h3>
-                  <p className="text-xs text-brand-body/70 leading-relaxed">{item.desc}</p>
-                  <span className="text-[10px] text-brand-body/50 block pt-1">{item.time}</span>
+                  <p className="text-xs text-brand-body/70 leading-relaxed">{item.message}</p>
+                  <span className="text-[10px] text-brand-body/50 block pt-1">
+                    {new Date(item.createdAt).toLocaleDateString('ar-EG')}
+                  </span>
                 </div>
               </div>
 

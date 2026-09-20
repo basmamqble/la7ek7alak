@@ -9,7 +9,7 @@ import AdminLayout from './components/common/adminLayout';
 import Login from './pages/login';
 import Dashboard from './pages/dashboard';
 import Merchants from './pages/merchants';
-import Stories from './pages/stories';
+import Stories from "./components/stories/stories";
 import Categories from './pages/categories';
 import Reports from './pages/reports';
 import Settings from "./components/settings/settings";

@@ -11,7 +11,7 @@ export default function Merchants() {
   const fetchMerchants = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await API.get('/admin/users');
+const response = await API.get('/admin/merchants');
       const data = response.data;
       
       let list = [];

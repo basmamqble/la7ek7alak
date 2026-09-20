@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://la7ek-7alak.apps.taqat.academy/api', // تأكدي إذا كان الـ /api مطلوباً في نهاية الرابط حسب إعدادات السيرفر الجديد
+  baseURL: 'https://la7ek-7alak.onrender.com/api', // تأكدي إذا كان الـ /api مطلوباً في نهاية الرابط حسب إعدادات السيرفر الجديد
   headers: {
     'Content-Type': 'application/json',
   },
