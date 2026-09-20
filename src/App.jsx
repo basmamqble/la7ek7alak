@@ -10,7 +10,7 @@ import Login from './pages/login';
 import Dashboard from './pages/dashboard';
 import Merchants from './pages/merchants';
 import Stories from "./components/stories/stories";
-import Categories from './pages/categories';
+import Categories from './components/categories/categories';
 import Reports from './pages/reports';
 import Settings from "./components/settings/settings";
 import Customers from "./components/customers/customers";
