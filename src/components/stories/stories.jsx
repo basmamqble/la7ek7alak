@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Search, MapPin } from 'lucide-react';
+import { BookOpen, Search, MapPin, Plus } from 'lucide-react';
 import StoryCard from './storyCard';
 import DeleteStoryModal from './deleteStoryModal';
+import AddStory from './addStory';
 
-// بيانات تجريبية مع المناطق الفعلية وثوانٍ متبقية حقيقية
 const initialStories = [
   {
     id: 1,
@@ -57,7 +57,16 @@ const regions = [
   "خانيونس"
 ];
 
+const merchantsList = [
+  { id: 1, name: 'متجر الأناقة', category: 'ملابس وأزياء' },
+  { id: 2, name: 'مطعم الشلال', category: 'مطاعم' },
+  { id: 3, name: 'بيتزا البرنس', category: 'مطاعم' },
+  { id: 4, name: 'مخابز السعادة', category: 'حلويات ومخابز' },
+  { id: 5, name: 'إلكترونيات القدس', category: 'إلكترونيات' }
+];
+
 export default function Stories() {
+  const [currentView, setCurrentView] = useState('list'); // 'list' أو 'add'
   const [stories, setStories] = useState(initialStories);
   const [filter, setFilter] = useState('all'); 
   const [selectedRegion, setSelectedRegion] = useState('الكل'); 
@@ -102,6 +111,11 @@ export default function Stories() {
     }
   };
 
+  const handleAddStory = (newStory) => {
+    setStories([newStory, ...stories]);
+    setCurrentView('list');
+  };
+
   const filteredStories = stories.filter(story => {
     const matchesSearch = story.merchantName.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           story.content.toLowerCase().includes(searchQuery.toLowerCase());
@@ -113,6 +127,18 @@ export default function Stories() {
     
     return matchesSearch && matchesRegion;
   });
+
+  // إذا كانت الحالة 'add'، اعرض مكون إضافة الستوري
+  if (currentView === 'add') {
+    return (
+      <AddStory 
+        regions={regions}
+        merchantsList={merchantsList}
+        onBack={() => setCurrentView('list')}
+        onAddStory={handleAddStory}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 bg-brand-bg min-h-screen p-6 relative" dir="rtl">
@@ -127,14 +153,21 @@ export default function Stories() {
             مراقبة جميع العروض المنشورة حالياً في التطبيق، تصفيتها حسب المناطق، ومتابعة العدادات الحية.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <span className="px-3.5 py-2 bg-purple-500/20 text-purple-300 text-xs font-bold rounded-2xl border border-purple-500/30 backdrop-blur-md">
             إجمالي العروض النشطة: {stories.length}
           </span>
+          <button
+            onClick={() => setCurrentView('add')}
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-brand-secondary hover:bg-brand-secondary-hover text-white text-xs font-bold rounded-2xl transition shadow-sm cursor-pointer"
+          >
+            <Plus size={16} />
+            إضافة ستوري لمتجر
+          </button>
         </div>
       </div>
 
-      {/* شريط البحث وأزرار تصفية الحالة */}
+      {/* شريط البحث وأزرار التصفية */}
       <div className="bg-brand-card p-4 rounded-3xl border border-brand-border shadow-sm flex flex-col lg:flex-row items-center justify-between gap-4">
         <div className="relative w-full lg:w-80">
           <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-body/60" size={18} />
@@ -178,7 +211,7 @@ export default function Stories() {
       {/* شريط فلاتر المناطق */}
       <div className="bg-brand-card p-3.5 rounded-3xl border border-brand-border shadow-sm flex items-center gap-2 overflow-x-auto">
         <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-brand-body font-bold shrink-0">
-          <MapPin size={15} className="text-brand-secondary" />
+          <MapPin size5={15} className="text-brand-secondary" />
           <span>المناطق:</span>
         </div>
         <div className="flex items-center gap-2">
