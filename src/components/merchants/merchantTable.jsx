@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Store, MapPin, Loader2, Edit, Save, X, Search, AlertTriangle } from 'lucide-react';
+import toast from 'react-hot-toast';
 import API from '../../api/axios';
 
 const CATEGORY_MAP = {
@@ -72,11 +73,13 @@ export default function MerchantTable({ merchants, refreshMerchants, loading, on
       const nextStatus = currentStatus === 'active' ? 'inactive' : 'active';
       await API.patch(`/admin/merchants/${merchantId}/status`, { status: nextStatus });
 
+      toast.success('تم تحديث حالة التاجر بنجاح');
       if (typeof refreshMerchants === 'function') {
         await refreshMerchants();
       }
     } catch (err) {
       console.error('فشل تغيير حالة التاجر:', err);
+      toast.error(err.response?.data?.message || 'فشل تغيير حالة التاجر');
     } finally {
       setUpdatingId(null);
     }
@@ -113,22 +116,23 @@ export default function MerchantTable({ merchants, refreshMerchants, loading, on
     setIsSubmitting(true);
     try {
       const payload = {
-        storeName: editFormData.storeName,
-        name: editFormData.merchantName,
-        phone: editFormData.phone,
+        storeName: editFormData.storeName.trim(),
+        name: editFormData.merchantName.trim(),
+        phone: editFormData.phone.trim(),
         cityId: editFormData.cityId ? Number(editFormData.cityId) : undefined,
         categoryId: editFormData.categoryId ? Number(editFormData.categoryId) : undefined,
       };
 
       await API.put(`/admin/merchants/${itemId}`, payload);
 
+      toast.success('تم تعديل بيانات التاجر بنجاح');
       setEditingId(null);
       if (typeof refreshMerchants === 'function') {
         await refreshMerchants();
       }
     } catch (err) {
       console.error('حدث خطأ أثناء تعديل بيانات التاجر:', err);
-      alert(err.response?.data?.message || 'حدث خطأ أثناء تعديل بيانات التاجر');
+      toast.error(err.response?.data?.message || 'حدث خطأ أثناء تعديل بيانات التاجر');
     } finally {
       setIsSubmitting(false);
     }
