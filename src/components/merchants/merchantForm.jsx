@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Loader2, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { Plus, Loader2, Eye, EyeOff, CheckCircle2, KeyRound, Copy } from 'lucide-react';
+import toast from 'react-hot-toast';
 import API from '../../api/axios';
 
 const CATEGORY_MAP = {
@@ -37,6 +38,47 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  // دالة لتوليد كلمة مرور عشوائية وآمنة تلقائياً
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%!';
+    let password = '';
+    for (let i = 0; i < 10; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setFormData((prev) => ({ ...prev, tempPassword: password }));
+    
+    toast.success('تم توليد كلمة سر مؤقتة بنجاح!', {
+      style: {
+        background: '#10B981',
+        color: '#FFFFFF',
+      },
+      iconTheme: {
+        primary: '#FFFFFF',
+        secondary: '#10B981',
+      },
+    });
+  };
+
+  // دالة لنسخ كلمة المرور المؤقتة
+  const copyPasswordToClipboard = () => {
+    if (!formData.tempPassword) {
+      toast.error('لا يوجد كلمة مرور لنسخها');
+      return;
+    }
+    navigator.clipboard.writeText(formData.tempPassword);
+    
+    toast.success('تم نسخ كلمة المرور للحافظة! 📋', {
+      style: {
+        background: '#10B981',
+        color: '#FFFFFF',
+      },
+      iconTheme: {
+        primary: '#FFFFFF',
+        secondary: '#10B981',
+      },
+    });
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -130,7 +172,6 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
         </div>
       )}
 
-      {/* التعديل هنا: عنوان القسم أصبح مطابقاً لتصميم (قائمة التجار المسجلين) */}
       <div className="flex justify-start mb-6">
         <div className="inline-flex items-center gap-2.5 bg-gray-50 border border-gray-200 text-brand-title px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm">
           <Plus size={18} className="text-brand-secondary" />
@@ -177,7 +218,31 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-brand-title mb-1.5">كلمة المرور المبدئية</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-brand-title">كلمة المرور المبدئية</label>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={generateRandomPassword}
+                  className="text-[10px] text-brand-secondary font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                  title="توليد كلمة مرور عشوائية"
+                >
+                  <KeyRound size={12} />
+                  توليد تلقائي
+                </button>
+                {formData.tempPassword && (
+                  <button
+                    type="button"
+                    onClick={copyPasswordToClipboard}
+                    className="text-[10px] text-gray-500 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                    title="نسخ كلمة المرور"
+                  >
+                    <Copy size={12} />
+                    نسخ
+                  </button>
+                )}
+              </div>
+            </div>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -186,7 +251,8 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
                 onChange={handleChange}
                 autoComplete="new-password"
                 required
-                className="w-full text-right px-3.5 py-2.5 pl-10 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors"
+                placeholder="انقر توليد تلقائي أو اكتبها يدوياً"
+                className="w-full text-right px-3.5 py-2.5 pl-16 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs font-mono font-bold text-gray-900 bg-white shadow-sm transition-colors"
               />
               <button
                 type="button"
