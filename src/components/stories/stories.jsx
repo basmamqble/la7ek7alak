@@ -128,7 +128,7 @@ export default function Stories() {
     return matchesSearch && matchesRegion;
   });
 
-  // إذا كانت الحالة 'add'، اعرض مكون إضافة الستوري
+  // إذا كانت الحالة 'add'، اعرض مكون إضافة الستوري مع تمرير قائمة المتاجر الحقيقية
   if (currentView === 'add') {
     return (
       <AddStory 
@@ -211,7 +211,7 @@ export default function Stories() {
       {/* شريط فلاتر المناطق */}
       <div className="bg-brand-card p-3.5 rounded-3xl border border-brand-border shadow-sm flex items-center gap-2 overflow-x-auto">
         <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-brand-body font-bold shrink-0">
-          <MapPin size5={15} className="text-brand-secondary" />
+          <MapPin size={15} className="text-brand-secondary" />
           <span>المناطق:</span>
         </div>
         <div className="flex items-center gap-2">
