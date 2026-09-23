@@ -16,7 +16,7 @@ import Settings from "./components/settings/settings";
 import Customers from "./components/customers/customers";
 import Notifications from './pages/Notifications';
 import Subscriptions from "./components/subscriptions/subscriptions";
-import AdsManagement from './components/ads/AdsManagement';
+import AdsManagement from './components/ads/adsManagement';
 import Verifications from './components/Verifications/verifications';
 function App() {
   return (
