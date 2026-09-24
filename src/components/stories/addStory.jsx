@@ -145,7 +145,7 @@ export default function AddStory({ regions, merchantsList, onBack, onAddStory })
         
         {/* اختيار التصنيف */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-brand-body">1. اختر التصنيف *</label>
+          <label className="text-xs font-semibold text-brand-body">1. اختر التصنيف</label>
           <div className="relative">
             <Tag className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-body/60" size={18} />
             <select
@@ -163,7 +163,7 @@ export default function AddStory({ regions, merchantsList, onBack, onAddStory })
 
         {/* اختيار المتجر */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-brand-body">2. اختر المتجر من قائمة التجار المسجلين *</label>
+          <label className="text-xs font-semibold text-brand-body">2. اختر المتجر من قائمة التجار المسجلين </label>
           <div className="relative">
             <Store className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-body/60" size={18} />
             <select
@@ -190,7 +190,7 @@ export default function AddStory({ regions, merchantsList, onBack, onAddStory })
 
         {/* تحديد المنطقة أو المدينة تلقائياً مع إمكانية التعديل اليدوي */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-brand-body">المنطقة أو المدينة (تتحدد تلقائياً من بيانات المتجر المسجلة) *</label>
+          <label className="text-xs font-semibold text-brand-body">المنطقة أو المدينة (تتحدد تلقائياً من بيانات المتجر المسجلة) </label>
           <div className="relative">
             <MapPin className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-body/60" size={18} />
             <select
@@ -206,7 +206,7 @@ export default function AddStory({ regions, merchantsList, onBack, onAddStory })
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-brand-body">محتوى العرض أو تفاصيل القصة *</label>
+          <label className="text-xs font-semibold text-brand-body">محتوى العرض أو تفاصيل القصة </label>
           <textarea
             rows="4"
             placeholder="اكتب تفاصيل العرض هنا..."

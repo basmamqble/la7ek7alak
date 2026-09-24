@@ -89,6 +89,12 @@ toast.success('تم تحديث حالة التاجر بنجاح', {
 if (typeof refreshMerchants === 'function') {
   await refreshMerchants();
 }
+
+      toast.success('تم تحديث حالة التاجر بنجاح');
+      if (typeof refreshMerchants === 'function') {
+        await refreshMerchants();
+      }
+
     } catch (err) {
       console.error('فشل تغيير حالة التاجر:', err);
       toast.error(err.response?.data?.message || 'فشل تغيير حالة التاجر');

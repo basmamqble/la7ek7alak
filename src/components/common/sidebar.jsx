@@ -11,7 +11,9 @@ import {
   LogOut, 
   X, 
   Bell,
-  CreditCard
+  CreditCard,
+  Megaphone,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function Sidebar({ onClose }) {
@@ -20,10 +22,12 @@ export default function Sidebar({ onClose }) {
   const navItems = [
     { title: 'الصفحة الرئيسية', path: '/dashboard', icon: LayoutDashboard },
     { title: 'إدارة التجار', path: '/merchants', icon: UserCheck },
+    { title: 'توثيق الحسابات', path: '/verifications', icon: ShieldCheck },
     { title: 'إدارة الزبائن', path: '/customers', icon: Users },
     { title: 'إدارة الـ Stories الحية', path: '/stories', icon: Flame },
     { title: 'إدارة الأقسام والمدن', path: '/categories', icon: FolderTree },
     { title: 'الاشتراكات والوصولات', path: '/subscriptions', icon: CreditCard },
+    { title: 'إدارة الإعلانات', path: '/ads', icon: Megaphone },
     { title: 'قائمة البلاغات', path: '/reports', icon: AlertTriangle },
     { title: 'الإشعارات', path: '/notifications', icon: Bell },
     { title: 'الإعدادات', path: '/settings', icon: Settings },

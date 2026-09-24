@@ -16,6 +16,8 @@ import Settings from "./components/settings/settings";
 import Customers from "./components/customers/customers";
 import Notifications from './pages/Notifications';
 import Subscriptions from "./components/subscriptions/subscriptions";
+import AdsManagement from './components/ads/AdsManagement';
+import Verifications from './components/Verifications/verifications';
 function App() {
   return (
     <BrowserRouter>
@@ -74,6 +76,8 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
+          <Route path="/ads" element={<AdsManagement />} />
+          <Route path="/Verifications" element={<Verifications />} />
         </Route>
 
         {/* إعادة التوجيه للمسارات غير المعروفة */}

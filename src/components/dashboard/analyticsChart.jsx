@@ -1,60 +1,59 @@
 import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { TrendingUp } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const data = [
-  { name: 'السبت', value: 30 },
-  { name: 'الأحد', value: 45 },
-  { name: 'الإثنين', value: 38 },
-  { name: 'الثلاثاء', value: 65 },
-  { name: 'الأربعاء', value: 78 },
-  { name: 'الخميس', value: 70 },
-  { name: 'الجمعة', value: 92 },
+const activityData = [
+  { time: '10 AM', stories: 12, users: 45 },
+  { time: '12 PM', stories: 28, users: 89 },
+  { time: '2 PM', stories: 45, users: 130 },
+  { time: '4 PM', stories: 35, users: 95 },
+  { time: '6 PM', stories: 60, users: 180 },
+  { time: '8 PM', stories: 50, users: 140 },
 ];
 
 export default function AnalyticsChart() {
   return (
-    <div className="bg-brand-card p-6 rounded-2xl shadow-xs border border-brand-border space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-bold text-brand-title flex items-center gap-2">
-          <span>📈</span> إحصائيات تفاعل الزبائن مع الـ Stories (آخر 7 أيام)
-        </h2>
+    <div className="bg-brand-card p-6 rounded-3xl border border-brand-border shadow-sm space-y-4">
+      <div className="flex items-center justify-between pb-4 border-b border-brand-border">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2.5 bg-brand-primary/10 text-brand-primary rounded-2xl">
+            <TrendingUp size={20} />
+          </div>
+          <h2 className="font-bold text-base text-brand-primary">حركة تفاعل المستخدمين والقصص اليوم</h2>
+        </div>
+        <span className="text-xs text-brand-body bg-brand-bg px-3 py-1.5 rounded-xl border border-brand-border font-medium">
+          اليوم الحالي
+        </span>
       </div>
 
-      <div className="h-64 w-full">
+      <div className="h-72 w-full pt-2">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 20, left: 20, bottom: 0 }}>
+          <AreaChart data={activityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
-              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-brand-secondary, #E86B32)" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="var(--color-brand-secondary, #E86B32)" stopOpacity={0.0} />
+              <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#0f172a" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#0f172a" stopOpacity={0}/>
+              </linearGradient>
+              <linearGradient id="colorStories" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.4}/>
+                <stop offset="95%" stopColor="#38bdf8" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <XAxis 
-              dataKey="name" 
-              interval={0} 
-              tickLine={false} 
-              axisLine={false} 
-              tick={{ fontSize: 11, fill: '#888' }} 
-            />
-            <YAxis hide domain={[0, 'dataMax + 10']} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+            <XAxis dataKey="time" stroke="#64748b" fontSize={11} tickLine={false} />
+            <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
             <Tooltip 
               contentStyle={{ 
-                borderRadius: '12px', 
-                backgroundColor: 'var(--color-brand-card, #ffffff)', 
-                borderColor: 'var(--color-brand-border, #EFECE6)', 
-                color: 'var(--color-brand-title, #013C58)',
+                backgroundColor: '#ffffff', 
+                borderColor: '#e2e8f0', 
+                borderRadius: '16px',
                 fontSize: '12px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
-              }}
+                direction: 'rtl',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+              }} 
             />
-            <Area 
-              type="monotone" 
-              dataKey="value" 
-              stroke="var(--color-brand-secondary, #E86B32)" 
-              strokeWidth={3} 
-              fillOpacity={1} 
-              fill="url(#colorValue)" 
-            />
+            <Area type="monotone" dataKey="users" name="العملاء المتفاعلون" stroke="#0f172a" strokeWidth={2.5} fillOpacity={1} fill="url(#colorUsers)" />
+            <Area type="monotone" dataKey="stories" name="القصص المنشورة" stroke="#38bdf8" strokeWidth={2.5} fillOpacity={1} fill="url(#colorStories)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>

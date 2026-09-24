@@ -11,15 +11,14 @@ import {
   CreditCard
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import API from '../api/axios'; // استيراد إعدادات الاتصال بالسيرفر الأساسية لديك
+import API from '../api/axios';
 
 export default function Notifications() {
   const navigate = useNavigate();
-  const [filter, setFilter] = useState('all'); // all | unread | customers | stories | report | subscription | system
+  const [filter, setFilter] = useState('all'); // all | unread | customers | stories | report | subscription | verification | system
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // جلب الإشعارات حقيجيًا من السيرفر عند تحميل الصفحة
   useEffect(() => {
     fetchNotifications();
   }, []);
@@ -28,7 +27,6 @@ export default function Notifications() {
     try {
       setLoading(true);
       const response = await API.get('/notifications');
-      // استقبال البيانات من المسار الجديد الذي أضفته للسيرفر
       setNotifications(response.data.notifications || []);
     } catch (error) {
       console.error('فشل في جلب الإشعارات:', error);
@@ -39,7 +37,6 @@ export default function Notifications() {
 
   const handleNotificationClick = async (item) => {
     try {
-      // إرسال طلب للسيرفر لتحديث حالة الإشعار إلى مقروء إذا لم يكن مقروءاً
       if (!item.isRead) {
         await API.patch(`/notifications/${item.id}/read`);
         setNotifications(prev =>
@@ -47,7 +44,6 @@ export default function Notifications() {
         );
       }
 
-      // الانتقال للرابط المرتبط إن وجد
       if (item.link) {
         navigate(item.link);
       }
@@ -81,6 +77,7 @@ export default function Notifications() {
     if (filter === 'stories') return n.type === 'story';
     if (filter === 'report') return n.type === 'report';
     if (filter === 'subscription') return n.type === 'subscription';
+    if (filter === 'verification') return n.type === 'verification'; // <-- فلتر طلبات التوثيق
     if (filter === 'system') return n.type === 'system';
     return true;
   });
@@ -95,6 +92,8 @@ export default function Notifications() {
         return <AlertTriangle size={18} className="text-rose-600" />;
       case 'subscription':
         return <CreditCard size={18} className="text-purple-600" />;
+      case 'verification':
+        return <ShieldCheck size={18} className="text-indigo-600" />; // <-- أيقونة توثيق الحسابات
       case 'system':
         return <ShieldCheck size={18} className="text-blue-600" />;
       default:
@@ -117,7 +116,7 @@ export default function Notifications() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-brand-primary">مركز الإشعارات</h1>
-            <p className="text-xs text-brand-body/70 mt-0.5">متابعة تنبيهات انضمام الزبائن، الستوريات، الاشتراكات والبلاغات</p>
+            <p className="text-xs text-brand-body/70 mt-0.5">متابعة تنبيهات التوثيق، الاشتراكات، الستوريات والبلاغات</p>
           </div>
         </div>
 
@@ -153,13 +152,13 @@ export default function Notifications() {
           غير المقروءة ({unreadCount})
         </button>
         <button
-          onClick={() => setFilter('stories')}
-          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${filter === 'stories'
+          onClick={() => setFilter('verification')}
+          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${filter === 'verification'
               ? 'bg-brand-secondary text-white shadow-sm'
               : 'bg-brand-card text-brand-body hover:bg-brand-bg border border-brand-border'
             }`}
         >
-          الستوريات المنشورة
+          طلبات التوثيق
         </button>
         <button
           onClick={() => setFilter('subscription')}
@@ -169,6 +168,15 @@ export default function Notifications() {
             }`}
         >
           الوصولات والاشتراكات
+        </button>
+        <button
+          onClick={() => setFilter('stories')}
+          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${filter === 'stories'
+              ? 'bg-brand-secondary text-white shadow-sm'
+              : 'bg-brand-card text-brand-body hover:bg-brand-bg border border-brand-border'
+            }`}
+        >
+          الستوريات المنشورة
         </button>
         <button
           onClick={() => setFilter('customers')}

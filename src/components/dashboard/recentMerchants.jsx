@@ -1,43 +1,37 @@
 import React from 'react';
-import { Store, MapPin } from 'lucide-react';
+import { Store, ChevronLeft } from 'lucide-react';
 
-export default function RecentMerchants({ merchants = [] }) {
-  const recentList = Array.isArray(merchants) ? merchants.slice(0, 5) : [];
-
+export default function RecentMerchants({ merchants = [], onViewAll }) {
   return (
-    <div className="bg-brand-card rounded-2xl p-6 border border-brand-border shadow-xs">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Store size={18} className="text-brand-secondary" />
-          <h2 className="text-sm font-bold text-brand-title">أحدث التجار المضافين</h2>
+    <div className="bg-brand-card p-6 rounded-3xl border border-brand-border shadow-sm space-y-4">
+      <div className="flex items-center justify-between pb-4 border-b border-brand-border">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2.5 bg-brand-secondary/10 text-brand-secondary rounded-2xl">
+            <Store size={20} />
+          </div>
+          <h2 className="font-bold text-base text-brand-primary">أحدث التجار انضماماً</h2>
         </div>
+        {onViewAll && (
+          <span 
+            onClick={onViewAll}
+            className="text-xs text-brand-secondary font-bold cursor-pointer hover:underline flex items-center gap-1"
+          >
+            عرض الكل <ChevronLeft size={14} />
+          </span>
+        )}
       </div>
 
-      {recentList.length === 0 ? (
-        <p className="text-xs text-gray-400 text-center py-6">لا يوجد تجار مضافون مؤخراً.</p>
-      ) : (
-        <div className="divide-y divide-brand-border">
-          {recentList.map((merchant, idx) => {
-            const storeName = merchant.storeName || merchant.store_name || merchant.name || 'متجر جديد';
-            const location = merchant.city?.name || merchant.city || merchant.address || 'غزة';
-
-            return (
-              <div key={merchant.id || idx} className="py-3 flex items-center justify-between text-xs">
-                <div>
-                  <h4 className="font-bold text-brand-title">{storeName}</h4>
-                  <p className="text-brand-body text-[11px] flex items-center gap-1 mt-0.5">
-                    <MapPin size={11} className="text-brand-secondary" />
-                    {location}
-                  </p>
-                </div>
-                <span className="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full text-[10px] font-bold">
-                  جديد
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <div className="space-y-3">
+        {merchants.map((merchant, index) => (
+          <div key={index} className="flex items-center justify-between p-3 bg-brand-bg/50 rounded-2xl border border-brand-border/60">
+            <div>
+              <h4 className="font-bold text-xs text-brand-primary">{merchant.storeName}</h4>
+              <p className="text-[11px] text-brand-body/70 mt-0.5">محافظة {merchant.city}</p>
+            </div>
+            <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-xl font-bold">نشط</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

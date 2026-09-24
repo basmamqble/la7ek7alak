@@ -1,22 +1,26 @@
 import React from 'react';
 
-export default function StatCard({ title, value, icon: Icon, trend }) {
+export default function StatCard({ title, value, icon: Icon, trend, trendType = 'up', description, bgGradient, iconBg, onClick }) {
   return (
-    <div className="bg-brand-card rounded-2xl p-5 border border-brand-border shadow-xs flex items-center justify-between">
-      <div className="space-y-1">
-        <p className="text-xs font-semibold text-brand-body">{title}</p>
-        <h3 className="text-2xl font-bold text-brand-title">{value}</h3>
+    <div 
+      onClick={onClick}
+      className={`p-5 rounded-3xl border shadow-sm space-y-3 cursor-pointer hover:shadow-md transition group ${bgGradient || 'bg-brand-card border-brand-border'}`}
+    >
+      <div className="flex items-center justify-between">
+        <div className={`p-3 text-white rounded-2xl shadow-sm group-hover:scale-110 transition ${iconBg || 'bg-brand-primary'}`}>
+          <Icon size={20} />
+        </div>
         {trend && (
-          <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full inline-block mt-1">
+          <span className={`flex items-center gap-0.5 px-2.5 py-1 rounded-xl text-xs font-bold ${trendType === 'down' ? 'text-rose-700 bg-rose-100' : 'text-emerald-700 bg-emerald-100'}`}>
             {trend}
           </span>
         )}
       </div>
-      {Icon && (
-        <div className="w-12 h-12 rounded-2xl bg-brand-secondary/10 flex items-center justify-center text-brand-secondary">
-          <Icon size={24} />
-        </div>
-      )}
+      <div>
+        <p className="text-xs text-brand-body font-semibold">{title}</p>
+        <h3 className="text-2xl font-black text-brand-primary mt-1">{value}</h3>
+      </div>
+      {description && <p className="text-[11px] text-brand-body/70">{description}</p>}
     </div>
   );
 }

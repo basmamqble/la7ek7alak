@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import MerchantForm from '../components/merchants/merchantForm';
 import MerchantTable from '../components/merchants/merchantTable';
 import API from '../api/axios';
+import MapPicker from "../components/mapPicker";
 
 export default function Merchants() {
   const [merchants, setMerchants] = useState([]);

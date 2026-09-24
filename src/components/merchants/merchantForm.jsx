@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Plus, Loader2, Eye, EyeOff, CheckCircle2, KeyRound, Copy } from 'lucide-react';
+import { Plus, Loader2, Eye, EyeOff, CheckCircle2, KeyRound, Copy, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 import API from '../../api/axios';
+import MapPicker from '../mapPicker'; // استيراد مكون الخريطة
 
 const CATEGORY_MAP = {
   1: 'ملابس وموضة',
@@ -12,14 +13,15 @@ const CATEGORY_MAP = {
   6: 'سوبر ماركت',
 };
 
+// تعريف المدن مع إحداثياتها الجغرافية المركزية
 const CITY_MAP = {
-  1: 'شمال غزة',
-  2: 'غزة',
-  3: 'النصيرات',
-  4: 'البريج',
-  5: 'المغازي',
-  6: 'دير البلح',
-  7: 'خانيونس',
+  1: { name: 'شمال غزة', lat: 31.5588, lng: 34.4988 },
+  2: { name: 'غزة', lat: 31.5016, lng: 34.4668 },
+  3: { name: 'النصيرات', lat: 31.4504, lng: 34.3936 },
+  4: { name: 'البريج', lat: 31.4391, lng: 34.3989 },
+  5: { name: 'المغازي', lat: 31.4242, lng: 34.3969 },
+  6: { name: 'دير البلح', lat: 31.4165, lng: 34.3533 },
+  7: { name: 'خانيونس', lat: 31.3462, lng: 34.3063 },
 };
 
 export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, onMerchantAdded }) {
@@ -31,6 +33,8 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
     phone: '',
     categoryId: '',
     cityId: '',
+    latitude: 31.5016,  // خط العرض الافتراضي (غزة)
+    longitude: 34.4668, // خط الطول الافتراضي (غزة)
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -49,14 +53,8 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
     setFormData((prev) => ({ ...prev, tempPassword: password }));
     
     toast.success('تم توليد كلمة سر مؤقتة بنجاح!', {
-      style: {
-        background: '#10B981',
-        color: '#FFFFFF',
-      },
-      iconTheme: {
-        primary: '#FFFFFF',
-        secondary: '#10B981',
-      },
+      style: { background: '#10B981', color: '#FFFFFF' },
+      iconTheme: { primary: '#FFFFFF', secondary: '#10B981' },
     });
   };
 
@@ -69,20 +67,38 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
     navigator.clipboard.writeText(formData.tempPassword);
     
     toast.success('تم نسخ كلمة المرور للحافظة! 📋', {
-      style: {
-        background: '#10B981',
-        color: '#FFFFFF',
-      },
-      iconTheme: {
-        primary: '#FFFFFF',
-        secondary: '#10B981',
-      },
+      style: { background: '#10B981', color: '#FFFFFF' },
+      iconTheme: { primary: '#FFFFFF', secondary: '#10B981' },
     });
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // إذا تم تغيير المدينة، قم بتحديث الإحداثيات تلقائياً لتتحرك الخريطة إليها
+    if (name === 'cityId') {
+      const selectedCity = CITY_MAP[value];
+      if (selectedCity) {
+        setFormData((prev) => ({
+          ...prev,
+          cityId: value,
+          latitude: selectedCity.lat,
+          longitude: selectedCity.lng,
+        }));
+        return;
+      }
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // دالة التقاط خط الطول والعرض عند النقر المباشر على الخريطة
+  const handleLocationSelect = (lat, lng) => {
+    setFormData((prev) => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -108,11 +124,13 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
         phone: formData.phone?.trim() || '0599999999',
         categoryId: selectedCatId,
         cityId: selectedCityId,
+        latitude: formData.latitude,   // إرسال خط العرض
+        longitude: formData.longitude, // إرسال خط الطول
       });
 
       const createdMerchant = response.data?.merchant || response.data?.data || response.data;
       const selectedCategoryName = CATEGORY_MAP[selectedCatId] || 'عام';
-      const selectedCityName = CITY_MAP[selectedCityId] || 'غزة';
+      const selectedCityName = CITY_MAP[selectedCityId]?.name || 'غزة';
 
       const formattedMerchant = {
         id: createdMerchant?.id || createdMerchant?._id || Date.now(),
@@ -126,6 +144,8 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
         categoryName: selectedCategoryName,
         city: { id: selectedCityId, name: selectedCityName },
         category: { id: selectedCatId, name: selectedCategoryName },
+        latitude: formData.latitude,
+        longitude: formData.longitude,
         status: 'active',
         createdAt: new Date().toISOString(),
       };
@@ -308,33 +328,53 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-brand-title mb-1.5">الموقع الجغرافي</label>
+            <label className="block text-xs font-semibold text-brand-title mb-1.5">الموقع الجغرافي (المنطقة)</label>
             <select
               name="cityId"
               value={formData.cityId}
               onChange={handleChange}
               required
-              className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors appearance-none"
+              className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors appearance-none mb-3"
             >
               <option value="" disabled hidden>اختر موقع المتجر</option>
-              {Object.entries(CITY_MAP).map(([id, name]) => (
-                <option key={id} value={id}>{name}</option>
+              {Object.entries(CITY_MAP).map(([id, city]) => (
+                <option key={id} value={id}>{city.name}</option>
               ))}
             </select>
           </div>
+        </div>
 
-          <div className="md:col-span-2 flex justify-start">
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-brand-title hover:bg-brand-title/90 text-white px-6 py-2.5 rounded-xl text-xs font-semibold transition duration-200 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
-            >
-              {loading && <Loader2 size={14} className="animate-spin" />}
-              <span>إنشاء حساب التاجر</span>
-            </button>
+        {/* قسم الخريطة التفاعلية */}
+        <div className="space-y-2 pt-2 border-t border-gray-100">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-semibold text-brand-title flex items-center gap-1.5">
+              <MapPin size={14} className="text-brand-secondary" />
+              <span>تحديد الموقع الدقيق على الخريطة (يتحدث تلقائياً عند اختيار المنطقة أو بالنقر اليدوي):</span>
+            </label>
+            <div className="text-[11px] text-gray-500 font-mono bg-gray-50 px-3 py-1 rounded-lg border border-gray-200">
+              خط العرض: {formData.latitude.toFixed(4)} | خط الطول: {formData.longitude.toFixed(4)}
+            </div>
           </div>
+          
+          {/* تمرير الإحداثيات الحالية لمكون الخريطة */}
+          <MapPicker 
+            lat={formData.latitude} 
+            lng={formData.longitude} 
+            onLocationSelect={handleLocationSelect} 
+          />
+        </div>
+
+        <div className="flex justify-start pt-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-brand-title hover:bg-brand-title/90 text-white px-6 py-2.5 rounded-xl text-xs font-semibold transition duration-200 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+          >
+            {loading && <Loader2 size={14} className="animate-spin" />}
+            <span>إنشاء حساب التاجر</span>
+          </button>
         </div>
       </form>
     </div>
