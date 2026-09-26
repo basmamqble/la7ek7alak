@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://la7ek-7alak.onrender.com/api', // تأكدي إذا كان الـ /api مطلوباً في نهاية الرابط حسب إعدادات السيرفر الجديد
+  baseURL: 'https://la7ek-7alak.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -24,12 +24,18 @@ API.interceptors.request.use((config) => {
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+    const requestUrl = error.config?.url || '';
+    const isAuthRequest = requestUrl.includes('auth/login') || requestUrl.includes('auth/register');
+    const isNotificationRequest = requestUrl.includes('/notifications');
+
+    if (error.response?.status === 401 && !isAuthRequest && !isNotificationRequest) {
       localStorage.removeItem('adminToken');
       localStorage.removeItem('token');
-      
-      if (!window.location.pathname.includes('auth/login')) {
-        window.location.href = 'auth/login';
+
+      // التصحيح: توجيه المستخدم لصفحة تسجيل الدخول بدلاً من '/'
+      const loginPath = '/auth/login'; // عدل هذا المسار حسب مسار صفحة الـ Login لديك في الـ Router
+      if (!window.location.pathname.includes(loginPath)) {
+        window.location.replace(loginPath);
       }
     }
     return Promise.reject(error);
