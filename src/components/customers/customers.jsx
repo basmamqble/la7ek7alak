@@ -3,6 +3,17 @@ import CustomersTable from './customersTable';
 import { AlertTriangle, X, UserPlus, Trash2, Loader2, Search } from 'lucide-react';
 import API from '../../api/axios';
 
+
+const generateRandomPassword = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$!%*?&';
+  let password = '';
+  for (let i = 0; i < 8; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
+
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +45,7 @@ export default function Customers() {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-      
+
       // إرجاع الـ Endpoint الصحيح الخاص بالباك إند
       const response = await API.get('/admin/customers', {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
@@ -120,49 +131,49 @@ export default function Customers() {
 
   // فتح نافذة تأكيد الحذف
   const handleOpenDeleteConfirm = (customer) => {
-  console.log("Customer object received:", customer); // للتأكد من هيكل البيانات في الـ Console
-  setSelectedCustomerForDelete(customer);
-  setIsDeleteModalOpen(true);
-};
+    console.log("Customer object received:", customer); // للتأكد من هيكل البيانات في الـ Console
+    setSelectedCustomerForDelete(customer);
+    setIsDeleteModalOpen(true);
+  };
 
-// حذف زبون
-const handleConfirmDelete = async () => {
-  const custId = selectedCustomerForDelete?.id;
+  // حذف زبون
+  const handleConfirmDelete = async () => {
+    const custId = selectedCustomerForDelete?.id;
 
-  if (!custId) {
-    alert("خطأ: المعرف غير موجود");
-    return;
-  }
-
-  try {
-    // 1. إرسال طلب الحذف للباك-إند
-    await API.delete(`/admin/customers/${custId}`);
-
-    // 2. إغلاق النافذة وتفريغ المتغير
-    setIsDeleteModalOpen(false);
-    setSelectedCustomerForDelete(null);
-
-    // 3. جلب القائمة المحدثة للزبائن
-    await fetchCustomers();
-    
-  } catch (err) {
-    console.error("خطأ أثناء حذف الزبون:", err);
-    
-    // تجاهل خطأ 404 إذا كان السجل قد حُذف مسبقاً لكي لا يزعج المستخدم
-    if (err.response?.status === 404) {
-      setIsDeleteModalOpen(false);
-      setSelectedCustomerForDelete(null);
-      await fetchCustomers();
+    if (!custId) {
+      alert("خطأ: المعرف غير موجود");
       return;
     }
 
-    alert(
-      err.response?.data?.message || 
-      err.response?.data?.error || 
-      "فشل حذف الزبون"
-    );
-  }
-};
+    try {
+      // 1. إرسال طلب الحذف للباك-إند
+      await API.delete(`/admin/customers/${custId}`);
+
+      // 2. إغلاق النافذة وتفريغ المتغير
+      setIsDeleteModalOpen(false);
+      setSelectedCustomerForDelete(null);
+
+      // 3. جلب القائمة المحدثة للزبائن
+      await fetchCustomers();
+
+    } catch (err) {
+      console.error("خطأ أثناء حذف الزبون:", err);
+
+      // تجاهل خطأ 404 إذا كان السجل قد حُذف مسبقاً لكي لا يزعج المستخدم
+      if (err.response?.status === 404) {
+        setIsDeleteModalOpen(false);
+        setSelectedCustomerForDelete(null);
+        await fetchCustomers();
+        return;
+      }
+
+      alert(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "فشل حذف الزبون"
+      );
+    }
+  };
 
 
   // فتح نافذة التأكيد عند الضغط على تغيير الحالة
@@ -206,7 +217,10 @@ const handleConfirmDelete = async () => {
         name: newCustomerData.name,
         email: newCustomerData.email,
         phone: newCustomerData.phone,
+        password: newCustomerData.password, // 👈 أضف هذا السطر ليتم إرسال كلمة المرور المولدة
       };
+
+      await API.post('/admin/customers', payload);
 
       await API.post('/admin/customers', payload);
 
@@ -228,7 +242,10 @@ const handleConfirmDelete = async () => {
           <p className="text-xs text-brand-body mt-1">عرض وتعديل بيانات حسابات الزبائن المسجلين</p>
         </div>
         <button
-          onClick={() => setIsAddModalOpen(true)}
+          onClick={() => {
+            setNewCustomerData({ name: '', email: '', phone: '', password: generateRandomPassword() });
+            setIsAddModalOpen(true);
+          }}
           className="bg-brand-primary text-white px-4 py-2 rounded-xl text-xs font-bold hover:opacity-90 transition cursor-pointer flex items-center gap-1.5"
         >
           <span>+ إضافة زبون جديد</span>
@@ -341,7 +358,24 @@ const handleConfirmDelete = async () => {
                   className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-brand-primary"
                 />
               </div>
-
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-medium text-gray-700">كلمة المرور المؤقتة</label>
+                  <button
+                    type="button"
+                    onClick={() => setNewCustomerData({ ...newCustomerData, password: generateRandomPassword() })}
+                    className="text-xs text-brand-primary hover:underline"
+                  >
+                    توليد كلمة مرور جديدة
+                  </button>
+                </div>
+                <input
+                  type="text" // يفضل جعلها text أو password مع إمكانية الإظهار ليراها المسؤول ويقوم بنسخها للزبون
+                  value={newCustomerData.password || ''}
+                  onChange={(e) => setNewCustomerData({ ...newCustomerData, password: e.target.value })}
+                  className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-brand-primary"
+                />
+              </div>
               <div className="flex items-center gap-2 pt-2">
                 <button
                   type="submit"
