@@ -140,7 +140,7 @@ export default function CustomersTable({
                           {onDelete && (
                             <button
                               type="button"
-                              onClick={() => onDelete(customer || item || row)} // تأكد من تمرير item (أو customer حسب المتغير المتاح في مصفوفة الجدول لديك)
+                              onClick={() => onDelete(customer)} // تأكد من تمرير item (أو customer حسب المتغير المتاح في مصفوفة الجدول لديك)
                               className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition cursor-pointer"
                               title="حذف"
                             >
