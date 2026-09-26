@@ -3,6 +3,8 @@ import { BookOpen, Search, MapPin, Plus } from 'lucide-react';
 import StoryCard from './storyCard';
 import DeleteStoryModal from './deleteStoryModal';
 import AddStory from './addStory';
+import API from '../../api/axios'; 
+import toast from 'react-hot-toast';
 
 const initialStories = [
   {
@@ -65,9 +67,38 @@ const merchantsList = [
   { id: 5, name: 'إلكترونيات القدس', category: 'إلكترونيات' }
 ];
 
+const getStoryStore = (story) => story.merchant?.store || story.merchant?.stores?.[0] || {};
+
+const getStoryStoreName = (story) => {
+  const store = getStoryStore(story);
+  return store.name
+    || story.merchant?.storeName
+    || story.merchant?.store_name
+    || story.merchant?.name
+    || story.merchant?.user?.name
+    || 'متجر';
+};
+
+const getStoryCity = (story) => {
+  const store = getStoryStore(story);
+  const city = story.merchant?.city ?? store.city;
+  return String(
+    story.merchant?.area
+    || store.area
+    || (typeof city === 'object' && (city.area || city.city || city.name || city.name_ar))
+    || story.merchant?.cityName
+    || store.cityName
+    || (typeof city === 'string' ? city : '')
+    || ''
+  ).trim();
+};
+
+
+
 export default function Stories() {
   const [currentView, setCurrentView] = useState('list'); // 'list' أو 'add'
-  const [stories, setStories] = useState(initialStories);
+  // const [stories, setStories] = useState(initialStories);
+  const [stories, setStories] = useState([]);
   const [filter, setFilter] = useState('all'); 
   const [selectedRegion, setSelectedRegion] = useState('الكل'); 
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,6 +106,94 @@ export default function Stories() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [storyToDelete, setStoryToDelete] = useState(null);
 
+// أضف هذه الحالة داخل مكون Stories في ملف stories.jsx
+const [merchantsList, setMerchantsList] = useState([]);
+const [loadingMerchants, setLoadingMerchants] = useState(false);
+
+const fetchActiveStories = async () => {
+    try {
+      const response = await API.get('/stories/active');
+      const formatted = response.data.map(story => {
+        const expiresAt = new Date(story.expiresAt);
+        const timeLeftSeconds = Math.max(0, Math.floor((expiresAt - new Date()) / 1000));
+        const city = getStoryCity(story);
+        return {
+          id: story.id,
+          merchantName: getStoryStoreName(story),
+          category: story.merchant?.category || '',
+          city,
+          locationDetail: city || 'الموقع غير محدد',
+          content: story.description,
+          timeLeftSeconds: timeLeftSeconds,
+          views: 0,
+          reportsCount: 0,
+          status: story.status,
+          imageUrl: story.mediaUrl || story.imageUrl
+        };
+      }).filter(story => story.timeLeftSeconds > 0);
+      setStories(formatted);
+    } catch (error) {
+      console.error('Error fetching active stories:', error);
+    }
+  };
+
+// دالة لجلب المتاجر من الباك-إند
+const fetchMerchants = async () => {
+  try {
+    // استخدام نفس endpoint المؤكد في صفحة إدارة التجار
+    const response = await API.get('/stories/merchants-list');
+    // يدعم الاستجابة المباشرة أو المغلفة داخل data/merchants
+    const responseData = response.data;
+    const merchants = Array.isArray(responseData)
+      ? responseData
+      : responseData?.merchants || responseData?.data || [];
+
+    const formatted = merchants.map((merchant) => {
+      const store = merchant.store || merchant.stores?.[0] || merchant;
+      const category = merchant.category ?? store.category;
+      const categoryId = merchant.categoryId
+        ?? merchant.category_id
+        ?? store.categoryId
+        ?? store.category_id
+        ?? (typeof category === 'number' || !isNaN(Number(category)) ? category : category?.id)
+        ?? '';
+      const categoryName = merchant.categoryName
+        ?? merchant.category_name
+        ?? store.categoryName
+        ?? category?.name
+        ?? category?.name_ar
+        ?? (typeof category === 'string' && isNaN(Number(category)) ? category : '');
+
+      return {
+        id: merchant.id ?? store.id,
+        name: merchant.user?.name || merchant.name || store.name || 'متجر',
+        category,
+        categoryId,
+        categoryName,
+        city: merchant.city || store.city || '',
+        cityName: merchant.area
+          ?? store.area
+          ?? merchant.cityName
+          ?? store.cityName
+          ?? merchant.city?.area
+          ?? merchant.city?.city
+          ?? merchant.city?.name
+          ?? merchant.city?.name_ar
+          ?? ''
+      };
+    });
+    setMerchantsList(formatted);
+  } catch (error) {
+    console.error('Error fetching merchants:', error);
+  }
+};
+
+useEffect(() => {
+  fetchActiveStories();
+  fetchMerchants();
+}, []);
+
+// الـ useEffect الخاص بالتايمر التنازلي للقصص
   useEffect(() => {
     const timerInterval = setInterval(() => {
       setStories(prevStories => 
@@ -83,12 +202,27 @@ export default function Stories() {
             return { ...story, timeLeftSeconds: story.timeLeftSeconds - 1 };
           }
           return story;
-        })
+        }).filter(story => story.timeLeftSeconds > 0)
       );
     }, 1000);
 
     return () => clearInterval(timerInterval);
   }, []);
+
+if (currentView === 'add') {
+    return (
+      <AddStory 
+        regions={regions}
+        merchantsList={merchantsList}
+        onBack={() => setCurrentView('list')}
+        onAddStory={(newStory) => {
+          // بعد إضافة ستوري جديدة بنجاح، قم بإعادة جلب القائمة الحية لتحديثها
+          fetchActiveStories();
+          setCurrentView('list');
+        }}
+      />
+    );
+  }
 
   const formatTime = (totalSeconds) => {
     if (totalSeconds <= 0) return "انتهى الوقت";
@@ -103,11 +237,17 @@ export default function Stories() {
     setIsModalOpen(true);
   };
 
-  const handleDeleteStory = () => {
+  const handleDeleteStory = async () => {
     if (storyToDelete) {
-      setStories(stories.filter(story => story.id !== storyToDelete.id));
-      setIsModalOpen(false);
-      setStoryToDelete(null);
+      try {
+        await API.delete(`/stories/${storyToDelete.id}`);
+        setStories(prevStories => prevStories.filter(story => story.id !== storyToDelete.id));
+        setIsModalOpen(false);
+        setStoryToDelete(null);
+        toast.success('تم حذف الستوري بنجاح');
+      } catch (error) {
+        toast.error(error.response?.data?.error || 'تعذر حذف الستوري');
+      }
     }
   };
 
