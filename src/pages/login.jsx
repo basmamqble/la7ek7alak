@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import API from '../api/axios';
@@ -19,14 +19,28 @@ export default function Login() {
     try {
       const response = await API.post('/auth/login', { email, password });
       
-      const token = response.data.token || response.data.accessToken;
-      if (token) {
-        localStorage.setItem('token', token);
+      const token = response.data?.token
+        || response.data?.accessToken
+        || response.data?.adminToken
+        || response.data?.data?.token
+        || response.data?.data?.accessToken
+        || response.data?.data?.adminToken;
+
+      if (!token) {
+        setError('لم يرجع الخادم رمز الدخول؛ تحقق من صيغة استجابة تسجيل الدخول.');
+        return;
       }
+
+      localStorage.setItem('adminToken', token);
+      localStorage.setItem('token', token);
 
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'حدث خطأ في البريد أو كلمة المرور');
+      if (err.response?.status === 401) {
+        setError('البريد الإلكتروني أو كلمة المرور غير صحيحة. تحقق من بيانات الدخول وحاول مرة أخرى.');
+      } else {
+        setError(err.response?.data?.error || err.response?.data?.message || 'تعذر الاتصال بالخادم. تحقق من اتصالك بالإنترنت وحاول مرة أخرى.');
+      }
     } finally {
       setLoading(false);
     }
