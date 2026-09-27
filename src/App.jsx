@@ -33,18 +33,18 @@ function App() {
             borderRadius: '12px',
             direction: 'rtl',
             padding: '12px 16px',
-            background: 'var(--color-primary)',
+            background: 'var(--color-brand-primary)',
             color: '#fff',
-            border: '1px solid var(--color-border)',
+            border: '1px solid var(--color-brand-border)',
             boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
           },
           success: {
             style: {
-              background: 'var(--color-primary)',
+              background: 'var(--color-brand-primary)',
               color: '#fff',
             },
             iconTheme: {
-              primary: 'var(--color-secondary)',
+              primary: 'var(--color-brand-secondary)',
               secondary: '#fff',
             },
           },
