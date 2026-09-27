@@ -1,28 +1,8 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, Loader2, Eye, EyeOff, CheckCircle2, KeyRound, Copy, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 import API from '../../api/axios';
 import MapPicker from '../mapPicker'; // استيراد مكون الخريطة
-
-const CATEGORY_MAP = {
-  1: 'ملابس وموضة',
-  2: 'مطاعم وكافيهات',
-  3: 'إلكترونيات',
-  4: 'عطور ومستحضرات',
-  5: 'أدوات منزلية',
-  6: 'سوبر ماركت',
-};
-
-// تعريف المدن مع إحداثياتها الجغرافية المركزية
-const CITY_MAP = {
-  1: { name: 'شمال غزة', lat: 31.5588, lng: 34.4988 },
-  2: { name: 'غزة', lat: 31.5016, lng: 34.4668 },
-  3: { name: 'النصيرات', lat: 31.4504, lng: 34.3936 },
-  4: { name: 'البريج', lat: 31.4391, lng: 34.3989 },
-  5: { name: 'المغازي', lat: 31.4242, lng: 34.3969 },
-  6: { name: 'دير البلح', lat: 31.4165, lng: 34.3533 },
-  7: { name: 'خانيونس', lat: 31.3462, lng: 34.3063 },
-};
 
 export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, onMerchantAdded }) {
   const initialFormState = {
@@ -42,6 +22,28 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      try {
+        const [categoriesResponse, locationsResponse] = await Promise.all([
+          API.get('/admin/categories'),
+          API.get('/admin/locations'),
+        ]);
+        setCategories(Array.isArray(categoriesResponse.data) ? categoriesResponse.data : []);
+        setLocations(Array.isArray(locationsResponse.data) ? locationsResponse.data : []);
+      } catch (fetchError) {
+        toast.error(fetchError.response?.data?.error || 'تعذر تحميل التصنيفات والمدن من قاعدة البيانات');
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+
+    loadOptions();
+  }, []);
 
   // دالة لتوليد كلمة مرور عشوائية وآمنة تلقائياً
   const generateRandomPassword = () => {
@@ -75,15 +77,18 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // إذا تم تغيير المدينة، قم بتحديث الإحداثيات تلقائياً لتتحرك الخريطة إليها
     if (name === 'cityId') {
-      const selectedCity = CITY_MAP[value];
+      const selectedCity = locations.find((location) => String(location.id) === value);
       if (selectedCity) {
+        const latitude = Number(selectedCity.latitude);
+        const longitude = Number(selectedCity.longitude);
         setFormData((prev) => ({
           ...prev,
           cityId: value,
-          latitude: selectedCity.lat,
-          longitude: selectedCity.lng,
+          ...(selectedCity.latitude != null && selectedCity.longitude != null
+            && Number.isFinite(latitude) && Number.isFinite(longitude)
+            ? { latitude, longitude }
+            : {}),
         }));
         return;
       }
@@ -103,7 +108,8 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.merchantName || !formData.storeName || !formData.email || !formData.tempPassword) {
+    if (!formData.merchantName || !formData.storeName || !formData.email || !formData.tempPassword
+      || !formData.categoryId || !formData.cityId) {
       setError('يرجى تعبئة كافة الحقول المطلوبة');
       return;
     }
@@ -113,8 +119,14 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
     setSuccess(false);
 
     try {
-      const selectedCatId = Number(formData.categoryId) || 1;
-      const selectedCityId = Number(formData.cityId) || 2;
+      const selectedCatId = Number(formData.categoryId);
+      const selectedCityId = Number(formData.cityId);
+      const selectedCategory = categories.find((category) => Number(category.id) === selectedCatId);
+      const selectedCity = locations.find((location) => Number(location.id) === selectedCityId);
+      if (!selectedCategory || !selectedCity) {
+        setError('التصنيف أو المدينة المحددة لم تعد متاحة. حدّث الصفحة واختر من القائمة مرة أخرى.');
+        return;
+      }
 
       const response = await API.post('/admin/merchants', {
         fullName: formData.merchantName.trim(),
@@ -129,8 +141,8 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
       });
 
       const createdMerchant = response.data?.merchant || response.data?.data || response.data;
-      const selectedCategoryName = CATEGORY_MAP[selectedCatId] || 'عام';
-      const selectedCityName = CITY_MAP[selectedCityId]?.name || 'غزة';
+      const selectedCategoryName = selectedCategory?.name || '';
+      const selectedCityName = selectedCity ? `${selectedCity.governorate} - ${selectedCity.area}` : '';
 
       const formattedMerchant = {
         id: createdMerchant?.id || createdMerchant?._id || Date.now(),
@@ -142,7 +154,7 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
         categoryId: selectedCatId,
         cityName: selectedCityName,
         categoryName: selectedCategoryName,
-        city: { id: selectedCityId, name: selectedCityName },
+        city: { id: selectedCityId, name: selectedCityName, area: selectedCity.area, governorate: selectedCity.governorate },
         category: { id: selectedCatId, name: selectedCategoryName },
         latitude: formData.latitude,
         longitude: formData.longitude,
@@ -321,8 +333,9 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
               className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors appearance-none"
             >
               <option value="" disabled hidden>اختر التصنيف</option>
-              {Object.entries(CATEGORY_MAP).map(([id, name]) => (
-                <option key={id} value={id}>{name}</option>
+              <option value="" disabled>{loadingOptions ? 'جاري تحميل التصنيفات...' : 'اختر التصنيف'}</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
           </div>
@@ -339,8 +352,11 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
               className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors appearance-none mb-3"
             >
               <option value="" disabled hidden>اختر موقع المتجر</option>
-              {Object.entries(CITY_MAP).map(([id, city]) => (
-                <option key={id} value={id}>{city.name}</option>
+              <option value="" disabled>{loadingOptions ? 'جاري تحميل المدن...' : 'اختر موقع المتجر'}</option>
+              {locations.map((location) => (
+                <option key={location.id} value={location.id}>
+                  {location.governorate} - {location.area}
+                </option>
               ))}
             </select>
           </div>
