@@ -1,16 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Store, MapPin, Upload, ArrowRight, PlusCircle, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
 import API from '../../api/axios';
-
-const CATEGORY_IDS = {
-  'ملابس وموضة': 1,
-  'مطاعم وكافيهات': 2,
-  'إلكترونيات': 3,
-  'عطور ومستحضرات': 4,
-  'أدوات منزلية': 5,
-  'سوبر ماركت': 6,
-};
 
 const CITY_NAMES = {
   1: 'شمال غزة',
@@ -21,6 +12,9 @@ const CITY_NAMES = {
   6: 'دير البلح',
   7: 'خانيونس',
 };
+
+const ALLOWED_IMAGE_TYPES = ['image/jpg','image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 
 const getCityName = (merchant) => {
   const store = merchant?.store || merchant?.stores?.[0] || {};
@@ -51,23 +45,30 @@ const getCityName = (merchant) => {
 };
 
 export default function AddStory({ merchantsList, onBack, onAddStory }) {
-  // التصنيفات الرسمية المعتمدة في النظام
-  const officialCategories = [
-    'ملابس وموضة',
-    'مطاعم وكافيهات',
-    'إلكترونيات',
-    'عطور ومستحضرات',
-    'أدوات منزلية',
-    'سوبر ماركت'
-  ];
-
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [selectedMerchantId, setSelectedMerchantId] = useState('');
   const [city, setCity] = useState('');
   const [content, setContent] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await API.get('/admin/categories');
+        setCategories(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        toast.error(error.response?.data?.error || 'تعذر تحميل تصنيفات قاعدة البيانات');
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const getMerchantCategory = (merchant) => {
     const category = merchant.category;
@@ -92,18 +93,9 @@ export default function AddStory({ merchantsList, onBack, onAddStory }) {
   const filteredMerchants = merchantsList ? merchantsList.filter(m => {
     if (!selectedCategory) return true;
     const merchantCategory = getMerchantCategory(m);
-    const merchantCat = merchantCategory.name;
-    const selectedCategoryId = String(CATEGORY_IDS[selectedCategory]);
-
-    if (merchantCategory.id === selectedCategoryId) return true;
-
-    if (selectedCategory === 'مطاعم وكافيهات') {
-      return merchantCat.includes('مطاعم') || merchantCat.includes('كافيهات') || merchantCat.includes('مخبز') || merchantCat.includes('حلويات');
-    }
-    if (selectedCategory === 'ملابس وموضة') {
-      return merchantCat.includes('ملابس') || merchantCat.includes('أزياء') || merchantCat.includes('موضة');
-    }
-    return merchantCat.includes(selectedCategory);
+    const category = categories.find((item) => String(item.id) === selectedCategory);
+    if (merchantCategory.id) return merchantCategory.id === selectedCategory;
+    return Boolean(category && merchantCategory.name === category.name);
   }) : [];
 
   const handleCategoryChange = (e) => {
@@ -128,10 +120,20 @@ export default function AddStory({ merchantsList, onBack, onAddStory }) {
     }
   };
 
-  const handleImageChange = (e) => 
-    {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      const extension = file.name.split('.').pop()?.toLowerCase();
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type) || !ALLOWED_IMAGE_EXTENSIONS.includes(extension)) {
+        toast.error('الملف غير مدعوم. ارفع صورة بصيغة JPG أو PNG أو WEBP فقط؛ الفيديو غير مسموح.');
+        e.target.value = '';
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('حجم الصورة يجب ألا يتجاوز 10 ميغابايت');
+        e.target.value = '';
+        return;
+      }
       setImageFile(file);
       const reader = new FileReader();
       reader.onload = () => setImagePreview(String(reader.result));
@@ -141,8 +143,8 @@ export default function AddStory({ merchantsList, onBack, onAddStory }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedCategory || !selectedMerchantId || !content.trim()) {
-      toast.error('يرجى اختيار التصنيف، المتجر، وتعبئة تفاصيل العرض', {
+    if (!selectedCategory || !selectedMerchantId || !content.trim() || !imageFile) {
+      toast.error('يرجى اختيار التصنيف والمتجر وإضافة التفاصيل والصورة', {
         style: { background: '#ef4444', color: '#fff', fontSize: '12px', fontWeight: 'bold', borderRadius: '16px' },
       });
       return;
@@ -151,18 +153,12 @@ export default function AddStory({ merchantsList, onBack, onAddStory }) {
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('merchantId', selectedMerchantId);
+      formData.append('description', content.trim());
 
-      // إرسال البيانات للباك-إند عبر الـ API
-      const response = await API.post('/stories/addstories', {
-        merchantId: selectedMerchantId,
-        mediaUrl: imagePreview || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80',
-        description: content,
-        discountPercentage: null,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await API.post('/stories/addstories', formData);
 
       onAddStory(response.data.story);
 
@@ -172,12 +168,12 @@ export default function AddStory({ merchantsList, onBack, onAddStory }) {
         
       });
 
-      setIsSubmitting(false);
     } catch (err) {
       console.error('Error adding story:', err);
       toast.error(err.response?.data?.error || 'حدث خطأ أثناء نشر الستوري', {
         style: { background: '#ef4444', color: '#fff', fontSize: '12px', fontWeight: 'bold', borderRadius: '16px' },
       });
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -217,11 +213,12 @@ export default function AddStory({ merchantsList, onBack, onAddStory }) {
             <select
               value={selectedCategory}
               onChange={handleCategoryChange}
+              disabled={loadingCategories || categories.length === 0}
               className="w-full bg-brand-bg pr-11 pl-4 py-3 rounded-2xl border border-brand-border text-xs text-brand-primary focus:outline-none focus:border-brand-secondary transition"
             >
-              <option value="">-- اختر التصنيف --</option>
-              {officialCategories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
+              <option value="">{loadingCategories ? 'جاري تحميل التصنيفات...' : '-- اختر التصنيف --'}</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
           </div>
@@ -293,7 +290,7 @@ export default function AddStory({ merchantsList, onBack, onAddStory }) {
               </div>
               <input
                 type="file"
-                accept="image/*"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                 onChange={handleImageChange}
                 className="hidden"
               />
