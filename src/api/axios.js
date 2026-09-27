@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'https://la7ek-7alak.onrender.com/api',
 });
 
 // 1. إرسال الـ Token مع كل طلب
