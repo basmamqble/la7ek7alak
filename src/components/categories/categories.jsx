@@ -1,24 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import API from '../../api/axios'; // تعديل الباث حسب مكان مجلد الـ api بالنسبة لمجلد common/categories
 import LocationsSection from './locationsSection';
 import CategoriesSection from './categoriesSection';
 
-const defaultLocations = [
-  { id: 1, governorate: 'الوسطى', area: 'النصيرات' },
-  { id: 2, governorate: 'غزة', area: 'الرمال' },
-  { id: 3, governorate: 'خانيونس', area: 'البلد' },
-];
-
-const defaultCategories = [
-  { id: 1, name: 'مطاعم وجبات سريعة', icon: '🍔' },
-  { id: 2, name: 'ملابس وأزياء', icon: '👗' },
-  { id: 3, name: 'حلويات ومخابز', icon: '🍩' },
-];
-
 export default function Categories() {
   // حالات المناطق
-  const [locations, setLocations] = useState(defaultLocations);
+  const [locations, setLocations] = useState([]);
   const [govInput, setGovInput] = useState('');
   const [areaInput, setAreaInput] = useState('');
   const [editingLocId, setEditingLocId] = useState(null);
@@ -26,7 +14,7 @@ export default function Categories() {
   const [editAreaInput, setEditAreaInput] = useState('');
 
   // حالات التصنيفات
-  const [categoriesList, setCategoriesList] = useState(defaultCategories);
+  const [categoriesList, setCategoriesList] = useState([]);
   const [catNameInput, setCatNameInput] = useState('');
   const [catIconInput, setCatIconInput] = useState('');
   const [editingCatId, setEditingCatId] = useState(null);
@@ -34,7 +22,7 @@ export default function Categories() {
   const [editCatIconInput, setEditCatIconInput] = useState('');
 
   // حالات التحميل
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmittingLoc, setIsSubmittingLoc] = useState(false);
   const [isSubmittingCat, setIsSubmittingCat] = useState(false);
 
@@ -47,21 +35,10 @@ export default function Categories() {
           API.get('/admin/locations'),
           API.get('/admin/categories'),
         ]);
-        if (locRes.data?.length > 0) setLocations(locRes.data);
-        if (catRes.data?.length > 0) setCategoriesList(catRes.data);
+        setLocations(Array.isArray(locRes.data) ? locRes.data : []);
+        setCategoriesList(Array.isArray(catRes.data) ? catRes.data : []);
       } catch (err) {
-        toast('يتم عرض البيانات الافتراضية محلياً', { 
-          icon: 'ℹ️',
-          style: {
-            background: 'var(--brand-card, #ffffff)',
-            color: 'var(--brand-primary, #0f172a)',
-            border: '1px solid var(--brand-border, #e2e8f0)',
-            padding: '12px 16px',
-            borderRadius: '16px',
-            fontSize: '12px',
-            fontWeight: '600',
-          },
-        });
+        toast.error(err.response?.data?.error || 'تعذر جلب الأقسام والمدن من الخادم');
       } finally {
         setIsLoading(false);
       }
@@ -82,14 +59,13 @@ export default function Categories() {
 
     try {
       const res = await API.post('/admin/locations', payload);
-      const savedLoc = res.data || { id: Date.now(), ...payload };
-      setLocations([savedLoc, ...locations]);
-    } catch (err) {
-      setLocations([{ id: Date.now(), ...payload }, ...locations]);
-    } finally {
-      toast.success('تمت إضافة المنطقة بنجاح ✨');
+      setLocations((current) => [res.data, ...current]);
+      toast.success('تمت إضافة المنطقة بنجاح');
       setGovInput('');
       setAreaInput('');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'تعذرت إضافة المنطقة');
+    } finally {
       setIsSubmittingLoc(false);
     }
   };
@@ -109,13 +85,12 @@ export default function Categories() {
     const updatedData = { governorate: editGovInput.trim(), area: editAreaInput.trim() };
 
     try {
-      await API.put(`/admin/locations/${id}`, updatedData);
-    } catch (err) {
-      // تحديث محلي
-    } finally {
-      setLocations(locations.map((loc) => (loc.id === id ? { ...loc, ...updatedData } : loc)));
+      const res = await API.put(`/admin/locations/${id}`, updatedData);
+      setLocations((current) => current.map((loc) => (loc.id === id ? res.data : loc)));
       setEditingLocId(null);
-      toast.success('تم تعديل المنطقة بنجاح ✨');
+      toast.success('تم تعديل المنطقة بنجاح');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'تعذر تعديل المنطقة');
     }
   };
 
@@ -124,11 +99,10 @@ export default function Categories() {
 
     try {
       await API.delete(`/admin/locations/${id}`);
-    } catch (err) {
-      // حذف محلي
-    } finally {
-      setLocations(locations.filter((loc) => loc.id !== id));
+      setLocations((current) => current.filter((loc) => loc.id !== id));
       toast.success('تم حذف المنطقة بنجاح');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'تعذر حذف المنطقة');
     }
   };
 
@@ -145,14 +119,21 @@ export default function Categories() {
 
     try {
       const res = await API.post('/admin/categories', payload);
-      const savedCat = res.data || { id: Date.now(), ...payload };
-      setCategoriesList([savedCat, ...categoriesList]);
-    } catch (err) {
-      setCategoriesList([{ id: Date.now(), ...payload }, ...categoriesList]);
-    } finally {
-      toast.success('تمت إضافة التصنيف بنجاح 🎉');
+      setCategoriesList((current) => [res.data, ...current]);
+      toast.success('تمت إضافة القسم بنجاح');
       setCatNameInput('');
       setCatIconInput('');
+    } catch (err) {
+      if (err.response?.status === 409) {
+        try {
+          const response = await API.get('/admin/categories');
+          setCategoriesList(Array.isArray(response.data) ? response.data : []);
+        } catch {
+          // Keep the current list if it cannot be refreshed.
+        }
+      }
+      toast.error(err.response?.data?.error || 'تعذرت إضافة القسم');
+    } finally {
       setIsSubmittingCat(false);
     }
   };
@@ -172,13 +153,12 @@ export default function Categories() {
     const updatedData = { name: editCatNameInput.trim(), icon: editCatIconInput.trim() };
 
     try {
-      await API.put(`/admin/categories/${id}`, updatedData);
-    } catch (err) {
-      // تحديث محلي
-    } finally {
-      setCategoriesList(categoriesList.map((cat) => (cat.id === id ? { ...cat, ...updatedData } : cat)));
+      const res = await API.put(`/admin/categories/${id}`, updatedData);
+      setCategoriesList((current) => current.map((cat) => (cat.id === id ? res.data : cat)));
       setEditingCatId(null);
-      toast.success('تم تعديل التصنيف بنجاح ✨');
+      toast.success('تم تعديل القسم بنجاح');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'تعذر تعديل القسم');
     }
   };
 
@@ -187,11 +167,10 @@ export default function Categories() {
 
     try {
       await API.delete(`/admin/categories/${id}`);
+      setCategoriesList((current) => current.filter((cat) => cat.id !== id));
+      toast.success('تم حذف القسم بنجاح');
     } catch (err) {
-      // حذف محلي
-    } finally {
-      setCategoriesList(categoriesList.filter((cat) => cat.id !== id));
-      toast.success('تم حذف التصنيف بنجاح');
+      toast.error(err.response?.data?.error || 'تعذر حذف القسم');
     }
   };
 
