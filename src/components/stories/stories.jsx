@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Search, MapPin, Plus } from 'lucide-react';
+import { BookOpen, Search, MapPin, Plus, LoaderCircle } from 'lucide-react';
 import StoryCard from './storyCard';
 import DeleteStoryModal from './deleteStoryModal';
 import AddStory from './addStory';
@@ -99,6 +99,7 @@ export default function Stories() {
   const [currentView, setCurrentView] = useState('list'); // 'list' أو 'add'
   // const [stories, setStories] = useState(initialStories);
   const [stories, setStories] = useState([]);
+  const [isLoadingStories, setIsLoadingStories] = useState(true);
   const [filter, setFilter] = useState('all'); 
   const [selectedRegion, setSelectedRegion] = useState('الكل'); 
   const [searchQuery, setSearchQuery] = useState('');
@@ -111,6 +112,7 @@ const [merchantsList, setMerchantsList] = useState([]);
 const [loadingMerchants, setLoadingMerchants] = useState(false);
 
 const fetchActiveStories = async () => {
+  setIsLoadingStories(true);
     try {
       const response = await API.get('/stories/active');
       const formatted = response.data.map(story => {
@@ -134,6 +136,8 @@ const fetchActiveStories = async () => {
       setStories(formatted);
     } catch (error) {
       console.error('Error fetching active stories:', error);
+    } finally {
+      setIsLoadingStories(false);
     }
   };
 
@@ -373,7 +377,12 @@ if (currentView === 'add') {
 
       {/* شبكة عرض القصص */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredStories.length > 0 ? (
+        {isLoadingStories ? (
+          <div className="col-span-full py-12 text-center bg-brand-card rounded-3xl border border-brand-border">
+            <LoaderCircle className="mx-auto mb-3 animate-spin text-brand-secondary" size={24} role="status" aria-label="جاري التحميل" />
+            <p className="text-xs text-brand-body font-medium">جاري تحميل العروض والقصص...</p>
+          </div>
+        ) : filteredStories.length > 0 ? (
           filteredStories.map((story) => (
             <StoryCard 
               key={story.id} 
