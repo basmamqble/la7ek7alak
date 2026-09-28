@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import CustomersTable from './customersTable';
-import { AlertTriangle, X, UserPlus, Trash2, Loader2, Search } from 'lucide-react';
+import { AlertTriangle, X, UserPlus, Trash2, Loader2, Search, Key, Eye, EyeOff } from 'lucide-react';
 import API from '../../api/axios';
-
 
 const generateRandomPassword = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$!%*?&';
@@ -13,40 +12,35 @@ const generateRandomPassword = () => {
   return password;
 };
 
-
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // حالات البحث والفلترة
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // حالات التعديل المباشر
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({ name: '', email: '', phone: '' });
   const [updatingId, setUpdatingId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // حالات النوافذ المنبثقة (Modals)
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [selectedCustomerForStatus, setSelectedCustomerForStatus] = useState(null);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newCustomerData, setNewCustomerData] = useState({ name: '', email: '', phone: '' });
+  const [newCustomerData, setNewCustomerData] = useState({ name: '', email: '', phone: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedCustomerForDelete, setSelectedCustomerForDelete] = useState(null);
 
-  // جلب قائمة الزبائن من الباك-إند
   const fetchCustomers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
 
-      // إرجاع الـ Endpoint الصحيح الخاص بالباك إند
       const response = await API.get('/admin/customers', {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
@@ -73,7 +67,6 @@ export default function Customers() {
     fetchCustomers();
   }, [fetchCustomers]);
 
-  // تصفية الزبائن بداخل الفرونت إند بناءً على البحث والفلتر
   const filteredCustomers = customers.filter((customer) => {
     const name = customer.name || customer.fullName || '';
     const email = customer.email || '';
@@ -93,7 +86,6 @@ export default function Customers() {
     return matchesSearch && matchesStatus;
   });
 
-  // بدء التعديل
   const handleStartEdit = (customer) => {
     const custId = customer.id || customer._id;
     setEditingId(custId);
@@ -108,7 +100,6 @@ export default function Customers() {
     setEditingId(null);
   };
 
-  // حفظ التعديل عبر الـ API
   const handleSaveEdit = async (id) => {
     setIsSubmitting(true);
     try {
@@ -129,16 +120,13 @@ export default function Customers() {
     }
   };
 
-  // فتح نافذة تأكيد الحذف
   const handleOpenDeleteConfirm = (customer) => {
-    console.log("Customer object received:", customer); // للتأكد من هيكل البيانات في الـ Console
     setSelectedCustomerForDelete(customer);
     setIsDeleteModalOpen(true);
   };
 
-  // حذف زبون
   const handleConfirmDelete = async () => {
-    const custId = selectedCustomerForDelete?.id;
+    const custId = selectedCustomerForDelete?.id || selectedCustomerForDelete?._id;
 
     if (!custId) {
       alert("خطأ: المعرف غير موجود");
@@ -146,43 +134,27 @@ export default function Customers() {
     }
 
     try {
-      // 1. إرسال طلب الحذف للباك-إند
       await API.delete(`/admin/customers/${custId}`);
-
-      // 2. إغلاق النافذة وتفريغ المتغير
       setIsDeleteModalOpen(false);
       setSelectedCustomerForDelete(null);
-
-      // 3. جلب القائمة المحدثة للزبائن
       await fetchCustomers();
-
     } catch (err) {
       console.error("خطأ أثناء حذف الزبون:", err);
-
-      // تجاهل خطأ 404 إذا كان السجل قد حُذف مسبقاً لكي لا يزعج المستخدم
       if (err.response?.status === 404) {
         setIsDeleteModalOpen(false);
         setSelectedCustomerForDelete(null);
         await fetchCustomers();
         return;
       }
-
-      alert(
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        "فشل حذف الزبون"
-      );
+      alert(err.response?.data?.message || err.response?.data?.error || "فشل حذف الزبون");
     }
   };
 
-
-  // فتح نافذة التأكيد عند الضغط على تغيير الحالة
   const handleOpenStatusConfirm = (customer) => {
     setSelectedCustomerForStatus(customer);
     setIsStatusModalOpen(true);
   };
 
-  // تأكيد تغيير الحالة عبر الـ API
   const handleConfirmStatusChange = async () => {
     if (!selectedCustomerForStatus) return;
 
@@ -207,7 +179,6 @@ export default function Customers() {
     }
   };
 
-  // إضافة زبون جديد عبر الـ API
   const handleAddCustomerSubmit = async (e) => {
     e.preventDefault();
     if (!newCustomerData.name.trim()) return;
@@ -217,14 +188,12 @@ export default function Customers() {
         name: newCustomerData.name,
         email: newCustomerData.email,
         phone: newCustomerData.phone,
-        password: newCustomerData.password, // 👈 أضف هذا السطر ليتم إرسال كلمة المرور المولدة
+        password: newCustomerData.password,
       };
 
       await API.post('/admin/customers', payload);
 
-      await API.post('/admin/customers', payload);
-
-      setNewCustomerData({ name: '', email: '', phone: '' });
+      setNewCustomerData({ name: '', email: '', phone: '', password: '' });
       setIsAddModalOpen(false);
       await fetchCustomers();
     } catch (err) {
@@ -234,11 +203,11 @@ export default function Customers() {
   };
 
   return (
-    <div className="p-6 bg-brand-bg min-h-screen text-right" dir="rtl">
-      {/* رأس الصفحة */}
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4 sm:p-6 bg-brand-bg min-h-screen text-right max-w-full overflow-x-hidden" dir="rtl">
+      {/* رأس الصفحة - متجاوب مع مختلف الشاشات */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-xl font-bold text-brand-title">إدارة الزبائن</h1>
+          <h1 className="text-lg sm:text-xl font-bold text-brand-title">إدارة الزبائن</h1>
           <p className="text-xs text-brand-body mt-1">عرض وتعديل بيانات حسابات الزبائن المسجلين</p>
         </div>
         <button
@@ -246,14 +215,15 @@ export default function Customers() {
             setNewCustomerData({ name: '', email: '', phone: '', password: generateRandomPassword() });
             setIsAddModalOpen(true);
           }}
-          className="bg-brand-primary text-white px-4 py-2 rounded-xl text-xs font-bold hover:opacity-90 transition cursor-pointer flex items-center gap-1.5"
+          className="w-full sm:w-auto bg-brand-primary text-white px-4 py-2.5 rounded-xl text-xs font-bold hover:opacity-90 transition cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
         >
+          <UserPlus size={16} />
           <span>+ إضافة زبون جديد</span>
         </button>
       </div>
 
       {/* شريط البحث والفلترة */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
@@ -261,14 +231,14 @@ export default function Customers() {
             placeholder="ابحث باسم الزبون، البريد الإلكتروني، أو رقم الهاتف..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pr-9 pl-4 py-2 bg-white border border-brand-border rounded-xl text-brand-title placeholder-gray-400 focus:outline-none focus:border-brand-secondary text-xs shadow-xs"
+            className="w-full pr-9 pl-4 py-2.5 bg-white border border-brand-border rounded-xl text-brand-title placeholder-gray-400 focus:outline-none focus:border-brand-secondary text-xs shadow-xs"
           />
         </div>
 
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-white border border-brand-border rounded-xl px-4 py-2 text-brand-body focus:outline-none focus:border-brand-secondary text-xs shadow-xs"
+          className="w-full sm:w-auto bg-white border border-brand-border rounded-xl px-4 py-2.5 text-brand-body focus:outline-none focus:border-brand-secondary text-xs shadow-xs cursor-pointer"
         >
           <option value="all">جميع الحالات</option>
           <option value="active">نشط</option>
@@ -286,23 +256,21 @@ export default function Customers() {
           {error}
         </div>
       ) : (
-        <CustomersTable
-          customers={filteredCustomers}
-          onToggleStatus={(customer) => {
-            setSelectedCustomerForStatus(customer);
-            setIsStatusModalOpen(true);
-          }}
-          editingId={editingId}
-          editFormData={editFormData}
-          setEditFormData={setEditFormData}
-          updatingId={updatingId}
-          isSubmitting={isSubmitting}
-          onStartEdit={handleStartEdit}
-          onCancelEdit={handleCancelEdit}
-          onSaveEdit={handleSaveEdit}
-          onOpenStatusConfirm={handleOpenStatusConfirm}
-          onDelete={handleOpenDeleteConfirm}
-        />
+        <div className="w-full overflow-hidden rounded-2xl border border-brand-border bg-brand-card shadow-xs">
+          <CustomersTable
+            customers={filteredCustomers}
+            editingId={editingId}
+            editFormData={editFormData}
+            setEditFormData={setEditFormData}
+            updatingId={updatingId}
+            isSubmitting={isSubmitting}
+            onStartEdit={handleStartEdit}
+            onCancelEdit={handleCancelEdit}
+            onSaveEdit={handleSaveEdit}
+            onOpenStatusConfirm={handleOpenStatusConfirm}
+            onDelete={handleOpenDeleteConfirm}
+          />
+        </div>
       )}
 
       {/* نافذة إضافة زبون جديد */}
@@ -326,7 +294,7 @@ export default function Customers() {
 
             <form onSubmit={handleAddCustomerSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">اسم الزبون </label>
+                <label className="block text-xs font-bold text-gray-700 mb-1">اسم الزبون</label>
                 <input
                   type="text"
                   required
@@ -338,7 +306,7 @@ export default function Customers() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">البريد الإلكتروني</label>
+                <label className="block text-xs font-bold text-gray-700 mb-1">البريد الإلكتروني</label>
                 <input
                   type="email"
                   placeholder="example@domain.com"
@@ -349,7 +317,7 @@ export default function Customers() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">رقم الهاتف</label>
+                <label className="block text-xs font-bold text-gray-700 mb-1">رقم الهاتف</label>
                 <input
                   type="text"
                   placeholder="059xxxxxxx"
@@ -358,35 +326,50 @@ export default function Customers() {
                   className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-brand-primary"
                 />
               </div>
+
+              {/* حقل كلمة المرور المطلوب مطابق للصورة تماماً */}
               <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-medium text-gray-700">كلمة المرور المؤقتة</label>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-xs font-bold text-gray-800">كلمة المرور المبدئية</label>
                   <button
                     type="button"
                     onClick={() => setNewCustomerData({ ...newCustomerData, password: generateRandomPassword() })}
-                    className="text-xs text-brand-primary hover:underline"
+                    className="text-xs text-amber-600 hover:text-amber-700 font-bold flex items-center gap-1 cursor-pointer transition"
                   >
-                    توليد كلمة مرور جديدة
+                    <Key size={13} className="rotate-90" />
+                    <span>توليد تلقائي</span>
                   </button>
                 </div>
-                <input
-                  type="text" // يفضل جعلها text أو password مع إمكانية الإظهار ليراها المسؤول ويقوم بنسخها للزبون
-                  value={newCustomerData.password || ''}
-                  onChange={(e) => setNewCustomerData({ ...newCustomerData, password: e.target.value })}
-                  className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-brand-primary"
-                />
+
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="انقر توليد أو اكتبها يدوياً"
+                    value={newCustomerData.password || ''}
+                    onChange={(e) => setNewCustomerData({ ...newCustomerData, password: e.target.value })}
+                    className="w-full pl-10 pr-3 py-2.5 text-xs border border-gray-200 rounded-2xl focus:outline-none focus:border-brand-primary placeholder-gray-400 bg-gray-50/30"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition cursor-pointer"
+                  >
+                    {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                  </button>
+                </div>
               </div>
+
               <div className="flex items-center gap-2 pt-2">
                 <button
                   type="submit"
-                  className="flex-1 bg-brand-primary text-white py-2 rounded-xl text-xs font-bold hover:opacity-90 transition cursor-pointer"
+                  className="flex-1 bg-brand-primary text-white py-2.5 rounded-xl text-xs font-bold hover:opacity-90 transition cursor-pointer"
                 >
                   حفظ وإضافة
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs font-medium hover:bg-gray-200 transition cursor-pointer"
+                  className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl text-xs font-medium hover:bg-gray-200 transition cursor-pointer"
                 >
                   إلغاء
                 </button>
@@ -396,39 +379,36 @@ export default function Customers() {
         </div>
       )}
 
-      {/* نافذة تأكيد الحذف */}
-      {isDeleteModalOpen && (
+      {/* نافذة تأكيد تغيير الحالة */}
+      {isStatusModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100 animate-in fade-in zoom-in duration-200">
-            <div className="flex justify-between items-center mb-4">
-              <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-600">
-                <Trash2 size={20} />
-              </div>
-              <button
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition cursor-pointer"
-              >
-                <X size={18} />
-              </button>
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100 text-center animate-in fade-in zoom-in duration-200">
+            <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 mx-auto flex items-center justify-center mb-4">
+              <AlertTriangle size={24} />
             </div>
-
-            <h3 className="text-base font-bold text-gray-800 mb-2">تأكيد حذف الزبون</h3>
+            <h3 className="text-base font-bold text-gray-800 mb-2">تغيير حالة الحساب</h3>
             <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-              هل أنت متأكد من رغبتك في حذف الزبون <span className="font-bold text-gray-700">"{selectedCustomerForDelete?.name}"</span> نهائياً؟ لا يمكن التراجع عن هذا الإجراء.
+              هل أنت تأكد من رغبتك في تغيير حالة الزبون{' '}
+              <span className="font-bold text-gray-800">
+                "{selectedCustomerForStatus?.name || selectedCustomerForStatus?.fullName}"
+              </span>
+              ؟
             </p>
-
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
-                type="button"
-                onClick={handleConfirmDelete}
-                className="flex-1 bg-rose-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-rose-700 transition cursor-pointer"
+                onClick={handleConfirmStatusChange}
+                disabled={updatingId === (selectedCustomerForStatus?.id || selectedCustomerForStatus?._id)}
+                className="flex-1 bg-brand-primary text-white py-2.5 rounded-xl text-xs font-bold hover:opacity-90 transition cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1"
               >
-                نعم، احذف
+                {updatingId === (selectedCustomerForStatus?.id || selectedCustomerForStatus?._id) ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  'تأكيد'
+                )}
               </button>
               <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs font-medium hover:bg-gray-200 transition cursor-pointer"
+                onClick={() => setIsStatusModalOpen(false)}
+                className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl text-xs font-medium hover:bg-gray-200 transition cursor-pointer"
               >
                 إلغاء
               </button>
@@ -437,42 +417,31 @@ export default function Customers() {
         </div>
       )}
 
-      {/* نافذة تأكيد تغيير الحالة */}
-      {isStatusModalOpen && (
+      {/* نافذة تأكيد الحذف */}
+      {isDeleteModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100 animate-in fade-in zoom-in duration-200">
-            <div className="flex justify-between items-center mb-4">
-              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
-                <AlertTriangle size={20} />
-              </div>
-              <button
-                onClick={() => setIsStatusModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition cursor-pointer"
-              >
-                <X size={18} />
-              </button>
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100 text-center animate-in fade-in zoom-in duration-200">
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 mx-auto flex items-center justify-center mb-4">
+              <Trash2 size={24} />
             </div>
-
-            <h3 className="text-base font-bold text-gray-800 mb-2">تأكيد تغيير حالة الحساب</h3>
+            <h3 className="text-base font-bold text-gray-800 mb-2">حذف حساب الزبون</h3>
             <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-              هل أنت متأكد من تغيير حالة الزبون <span className="font-bold text-gray-700">"{selectedCustomerForStatus?.name}"</span>؟
-              {selectedCustomerForStatus?.status === 'active' || selectedCustomerForStatus?.status === 'نشط'
-                ? ' سيتم حظر الحساب ومنعه من استخدام التطبيق.'
-                : ' سيتم إعادة تفعيل الحساب.'}
+              هل أنت متأكد من حذف حساب الزبون{' '}
+              <span className="font-bold text-gray-800">
+                "{selectedCustomerForDelete?.name || selectedCustomerForDelete?.fullName}"
+              </span>
+              ؟ لا يمكنك التراجع عن هذا الإجراء.
             </p>
-
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
-                type="button"
-                onClick={handleConfirmStatusChange}
-                className="flex-1 bg-amber-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-amber-700 transition cursor-pointer"
+                onClick={handleConfirmDelete}
+                className="flex-1 bg-rose-600 text-white py-2.5 rounded-xl text-xs font-bold hover:bg-rose-700 transition cursor-pointer"
               >
-                تأكيد التغيير
+                حذف نهائياً
               </button>
               <button
-                type="button"
-                onClick={() => setIsStatusModalOpen(false)}
-                className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs font-medium hover:bg-gray-200 transition cursor-pointer"
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl text-xs font-medium hover:bg-gray-200 transition cursor-pointer"
               >
                 إلغاء
               </button>
