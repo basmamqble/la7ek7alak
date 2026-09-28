@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://la7ek-7alak.onrender.com/api',
+  baseURL: 'http://localhost:5000/api',
 });
 
 // 1. إرسال الـ Token مع كل طلب
@@ -30,7 +30,7 @@ API.interceptors.response.use(
       localStorage.removeItem('token');
 
       // التصحيح: توجيه المستخدم لصفحة تسجيل الدخول بدلاً من '/'
-      const loginPath = '/auth/login'; // عدل هذا المسار حسب مسار صفحة الـ Login لديك في الـ Router
+      const loginPath = '/';
       if (!window.location.pathname.includes(loginPath)) {
         window.location.replace(loginPath);
       }
