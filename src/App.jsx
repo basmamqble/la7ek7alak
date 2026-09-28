@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
 // استيراد المكونات المشتركة والـ Layout
@@ -18,6 +18,13 @@ import Notifications from './pages/Notifications';
 import Subscriptions from "./components/subscriptions/subscriptions";
 import AdsManagement from './components/ads/adsManagement';
 import Verifications from './components/Verifications/verifications';
+
+function ProtectedRoute() {
+  const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+
+  return token ? <Outlet /> : <Navigate to="/" replace />;
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -66,18 +73,20 @@ function App() {
         <Route path="/" element={<Login />} />
 
         {/* مسارات لوحة التحكم المغلفة بالـ AdminLayout */}
-        <Route element={<AdminLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/merchants" element={<Merchants />} />
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/stories" element={<Stories />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/subscriptions" element={<Subscriptions />} />
-          <Route path="/ads" element={<AdsManagement />} />
-          <Route path="/Verifications" element={<Verifications />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/merchants" element={<Merchants />} />
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/stories" element={<Stories />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/subscriptions" element={<Subscriptions />} />
+            <Route path="/ads" element={<AdsManagement />} />
+            <Route path="/Verifications" element={<Verifications />} />
+          </Route>
         </Route>
 
         {/* إعادة التوجيه للمسارات غير المعروفة */}
