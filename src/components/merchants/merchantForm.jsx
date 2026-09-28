@@ -97,7 +97,7 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // دالة التقاط خط الطول والعرض عند النقر المباشر على الخريطة
+  // دالة التقاط الموقع عند النقر المباشر على الخريطة
   const handleLocationSelect = (lat, lng) => {
     setFormData((prev) => ({
       ...prev,
@@ -136,8 +136,8 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
         phone: formData.phone?.trim() || '0599999999',
         categoryId: selectedCatId,
         cityId: selectedCityId,
-        latitude: formData.latitude,   // إرسال خط العرض
-        longitude: formData.longitude, // إرسال خط الطول
+        latitude: formData.latitude,
+        longitude: formData.longitude,
       });
 
       const createdMerchant = response.data?.merchant || response.data?.data || response.data;
@@ -195,25 +195,25 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
   };
 
   return (
-    <div className="bg-brand-card rounded-2xl p-6 shadow-xs border border-brand-border mb-6 transition-all duration-300">
+    <div className="bg-brand-card rounded-2xl p-4 sm:p-6 shadow-xs border border-brand-border mb-6 transition-all duration-300">
       
       {success && (
         <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-3 rounded-xl mb-5 text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-all duration-300">
-          <CheckCircle2 size={16} className="text-emerald-600" />
+          <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
           <span>تم إنشاء حساب التاجر بنجاح وإرسال بيانات الاعتماد له!</span>
         </div>
       )}
 
       <div className="flex justify-start mb-6">
         <div className="inline-flex items-center gap-2.5 bg-gray-50 border border-gray-200 text-brand-title px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm">
-          <Plus size={18} className="text-brand-secondary" />
+          <Plus size={18} className="text-brand-secondary shrink-0" />
           <span>إضافة تاجر جديد</span>
         </div>
       </div>
 
       {error && (
         <div className="bg-rose-50 border border-rose-200 text-rose-600 text-xs p-3.5 rounded-xl mb-5 text-center font-semibold shadow-xs flex items-center justify-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+          <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
           <span>{error}</span>
         </div>
       )}
@@ -222,7 +222,8 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
         <input type="text" style={{ display: 'none' }} aria-hidden="true" />
         <input type="password" style={{ display: 'none' }} aria-hidden="true" />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* الحقول الأساسية بتصميم متجاوب 1 عمود للجوال و3 أعمدة للشاشات الكبيرة */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-semibold text-brand-title mb-1.5">اسم التاجر</label>
             <input
@@ -283,7 +284,7 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
                 onChange={handleChange}
                 autoComplete="new-password"
                 required
-                placeholder="انقر توليد تلقائي أو اكتبها يدوياً"
+                placeholder="انقر توليد أو اكتبها يدوياً"
                 className="w-full text-right px-3.5 py-2.5 pl-16 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs font-mono font-bold text-gray-900 bg-white shadow-sm transition-colors"
               />
               <button
@@ -297,7 +298,7 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-semibold text-brand-title mb-1.5">اسم المتجر</label>
             <input
@@ -341,7 +342,7 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-semibold text-brand-title mb-1.5">الموقع الجغرافي (المنطقة)</label>
             <select
@@ -349,7 +350,7 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
               value={formData.cityId}
               onChange={handleChange}
               required
-              className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors appearance-none mb-3"
+              className="w-full text-right px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-secondary text-xs text-brand-title bg-white shadow-sm transition-colors appearance-none"
             >
               <option value="" disabled hidden>اختر موقع المتجر</option>
               <option value="" disabled>{loadingOptions ? 'جاري تحميل المدن...' : 'اختر موقع المتجر'}</option>
@@ -362,31 +363,27 @@ export default function MerchantForm({ refreshMerchants, setShowSuccessMessage, 
           </div>
         </div>
 
-        {/* قسم الخريطة التفاعلية */}
+        {/* قسم الخريطة التفاعلية المتجاوب */}
         <div className="space-y-2 pt-2 border-t border-gray-100">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold text-brand-title flex items-center gap-1.5">
-              <MapPin size={14} className="text-brand-secondary" />
-              <span>تحديد الموقع الدقيق على الخريطة (يتحدث تلقائياً عند اختيار المنطقة أو بالنقر اليدوي):</span>
-            </label>
-            <div className="text-[11px] text-gray-500 font-mono bg-gray-50 px-3 py-1 rounded-lg border border-gray-200">
-              خط العرض: {formData.latitude.toFixed(4)} | خط الطول: {formData.longitude.toFixed(4)}
-            </div>
-          </div>
+          <label className="text-xs font-semibold text-brand-title flex items-center gap-1.5">
+            <MapPin size={14} className="text-brand-secondary shrink-0" />
+            <span>حدد الموقع الدقيق للمتجر على الخريطة (يتحدث تلقائياً عند اختيار المنطقة أو بالنقر المباشر):</span>
+          </label>
           
-          {/* تمرير الإحداثيات الحالية لمكون الخريطة */}
-          <MapPicker 
-            lat={formData.latitude} 
-            lng={formData.longitude} 
-            onLocationSelect={handleLocationSelect} 
-          />
+          <div className="w-full overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+            <MapPicker 
+              lat={formData.latitude} 
+              lng={formData.longitude} 
+              onLocationSelect={handleLocationSelect} 
+            />
+          </div>
         </div>
 
         <div className="flex justify-start pt-2">
           <button
             type="submit"
             disabled={loading}
-            className="bg-brand-title hover:bg-brand-title/90 text-white px-6 py-2.5 rounded-xl text-xs font-semibold transition duration-200 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+            className="w-full sm:w-auto bg-brand-title hover:bg-brand-title/90 text-white px-6 py-2.5 rounded-xl text-xs font-semibold transition duration-200 shadow-md flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             {loading && <Loader2 size={14} className="animate-spin" />}
             <span>إنشاء حساب التاجر</span>
