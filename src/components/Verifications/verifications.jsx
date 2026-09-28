@@ -83,24 +83,25 @@ export default function Verifications() {
   });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 text-right font-sans" dir="rtl">
+    <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6 text-right font-sans" dir="rtl">
       {/* هيدر الصفحة */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-brand-secondary/10 text-brand-primary rounded-xl">
-            <ShieldCheck size={26} />
+          <div className="p-2.5 sm:p-3 bg-brand-secondary/10 text-brand-primary rounded-xl shrink-0">
+            <ShieldCheck size={24} className="sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-800">إدارة طلبات توثيق الحسابات</h1>
-            <p className="text-xs text-gray-500 mt-0.5">مراجعة أوراق المتاجر وتوثيق الحسابات بالعلامة الزرقاء</p>
+            <h1 className="text-base sm:text-xl font-bold text-gray-800 leading-tight">إدارة طلبات توثيق الحسابات</h1>
+            <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">مراجعة أوراق المتاجر وتوثيق الحسابات بالعلامة الزرقاء</p>
           </div>
         </div>
       </div>
 
       {/* أدوات البحث والفلترة */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-        <div className="relative w-full sm:w-72">
-          <Search size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-gray-100 shadow-sm">
+        {/* حقل البحث */}
+        <div className="relative w-full md:w-80">
+          <Search size={18} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="ابحث باسم المتجر أو المالك..."
@@ -110,28 +111,32 @@ export default function Verifications() {
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-          <Filter size={16} className="text-gray-400 shrink-0" />
+        {/* أزرار التصفية والفلترة */}
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+          <Filter size={16} className="text-gray-400 shrink-0 hidden sm:block" />
+          
           <button
             onClick={() => setStatusFilter('all')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-              statusFilter === 'all' ? 'bg-brand-secondary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer shrink-0 ${
+              statusFilter === 'all' ? 'bg-brand-secondary text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
             الكل ({verifications.length})
           </button>
+          
           <button
             onClick={() => setStatusFilter('pending')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-              statusFilter === 'pending' ? 'bg-brand-secondary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer shrink-0 ${
+              statusFilter === 'pending' ? 'bg-brand-secondary text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
             قيد المراجعة
           </button>
+          
           <button
             onClick={() => setStatusFilter('accepted')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-              statusFilter === 'accepted' ? 'bg-brand-secondary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer shrink-0 ${
+              statusFilter === 'accepted' ? 'bg-brand-secondary text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
             الموثقة
@@ -139,13 +144,17 @@ export default function Verifications() {
         </div>
       </div>
 
-      {/* جدول عرض الطلبات (المكون المنفصل) */}
-      <VerificationTable
-        requests={filteredVerifications}
-        onViewDetails={handleViewDetails}
-        onAccept={handleAccept}
-        onReject={handleReject}
-      />
+      {/* جدول عرض الطلبات متجاوب مع الشاشات الصغيرة */}
+      <div className="w-full overflow-x-auto rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div className="min-w-[650px] sm:min-w-full">
+          <VerificationTable
+            requests={filteredVerifications}
+            onViewDetails={handleViewDetails}
+            onAccept={handleAccept}
+            onReject={handleReject}
+          />
+        </div>
+      </div>
 
       {/* نافذة التفاصيل والمودال */}
       {isModalOpen && selectedVerification && (
