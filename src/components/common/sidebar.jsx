@@ -41,7 +41,7 @@ export default function Sidebar({ onClose }) {
   };
 
   return (
-    <aside className="w-64 bg-brand-primary text-white flex flex-col justify-between h-full z-20 shadow-lg select-none">
+    <aside className="w-64 bg-brand-primary text-white flex flex-col justify-between h-screen fixed inset-y-0 right-0 z-[9999] shadow-2xl select-none">
       <div className="flex flex-col h-full overflow-hidden">
         
         {/* هيدر الشريط الجانبي مع الاسم ولوحة التحكم بدون اللوجو */}
