@@ -16,10 +16,10 @@ export default function Categories() {
   // حالات التصنيفات
   const [categoriesList, setCategoriesList] = useState([]);
   const [catNameInput, setCatNameInput] = useState('');
-  const [catIconInput, setCatIconInput] = useState('');
+  const [catIconFile, setCatIconFile] = useState(null); // تخزين ملف SVG المرفوع
   const [editingCatId, setEditingCatId] = useState(null);
   const [editCatNameInput, setEditCatNameInput] = useState('');
-  const [editCatIconInput, setEditCatIconInput] = useState('');
+  const [editCatIconFile, setEditCatIconFile] = useState(null); // تخزين ملف SVG للتعديل
 
   // حالات التحميل
   const [isLoading, setIsLoading] = useState(true);
@@ -106,7 +106,7 @@ export default function Categories() {
     }
   };
 
-  // --- إدارة التصنيفات ---
+  // --- إدارة التصنيفات (مع دعم رفع ملفات SVG عبر FormData) ---
   const handleAddCategory = async (e) => {
     e.preventDefault();
     if (!catNameInput.trim()) {
@@ -115,21 +115,28 @@ export default function Categories() {
     }
 
     setIsSubmittingCat(true);
-    const payload = { name: catNameInput.trim(), icon: catIconInput.trim() || '🏷️' };
+    
+    const formData = new FormData();
+    formData.append('name', catNameInput.trim());
+    if (catIconFile) {
+      formData.append('icon', catIconFile);
+    }
 
     try {
-      const res = await API.post('/admin/categories', payload);
+      const res = await API.post('/admin/categories', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       setCategoriesList((current) => [res.data, ...current]);
       toast.success('تمت إضافة القسم بنجاح');
       setCatNameInput('');
-      setCatIconInput('');
+      setCatIconFile(null);
     } catch (err) {
       if (err.response?.status === 409) {
         try {
           const response = await API.get('/admin/categories');
           setCategoriesList(Array.isArray(response.data) ? response.data : []);
         } catch {
-          // Keep the current list if it cannot be refreshed.
+          // Keep current list
         }
       }
       toast.error(err.response?.data?.error || 'تعذرت إضافة القسم');
@@ -141,7 +148,7 @@ export default function Categories() {
   const startEditCategory = (cat) => {
     setEditingCatId(cat.id);
     setEditCatNameInput(cat.name);
-    setEditCatIconInput(cat.icon);
+    setEditCatIconFile(null); // إعادة تعيين الملف عند بدء التعديل
   };
 
   const handleSaveCategoryEdit = async (id) => {
@@ -150,10 +157,16 @@ export default function Categories() {
       return;
     }
 
-    const updatedData = { name: editCatNameInput.trim(), icon: editCatIconInput.trim() };
+    const formData = new FormData();
+    formData.append('name', editCatNameInput.trim());
+    if (editCatIconFile) {
+      formData.append('icon', editCatIconFile);
+    }
 
     try {
-      const res = await API.put(`/admin/categories/${id}`, updatedData);
+      const res = await API.put(`/admin/categories/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       setCategoriesList((current) => current.map((cat) => (cat.id === id ? res.data : cat)));
       setEditingCatId(null);
       toast.success('تم تعديل القسم بنجاح');
@@ -216,15 +229,13 @@ export default function Categories() {
             isLoading,
             catNameInput,
             setCatNameInput,
-            catIconInput,
-            setCatIconInput,
+            setCatIconInput: setCatIconFile,
             isSubmittingCat,
             handleAddCategory,
             editingCatId,
             editCatNameInput,
             setEditCatNameInput,
-            editCatIconInput,
-            setEditCatIconInput,
+            setEditCatIconInput: setEditCatIconFile,
             startEditCategory,
             handleSaveCategoryEdit,
             setEditingCatId,
