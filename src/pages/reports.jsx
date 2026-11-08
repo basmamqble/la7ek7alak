@@ -1,73 +1,66 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Trash2, ShieldAlert } from 'lucide-react';
 import API from '../api/axios';
 
-// بيانات بلاغات وهمية افتراضية مطابقة للصورة
-const defaultReports = [
-  {
-    id: 1,
-    reporterName: 'محمد الشريف',
-    reporterPhone: '+970 599 123 456',
-    storeName: 'بيتزا البرنس',
-    storeLocation: 'الوسطى - النصيرات',
-    storyTitle: 'خصم 30% على الوجبات العائلية',
-    reason: 'السعر غير مطابق',
-    date: '2026/08/27',
-    time: '10:30 صباحاً',
-  },
-  {
-    id: 2,
-    reporterName: 'آية مصطفى',
-    reporterPhone: '+970 598 654 321',
-    storeName: 'مطعم الشلال',
-    storeLocation: 'غزة - الرمال',
-    storyTitle: 'وجبة سوبر كومبو + مشروب',
-    reason: 'محتوى / صورة غير مريحة',
-    date: '2026/08/26',
-    time: '04:15 مساءً',
-  },
-  {
-    id: 3,
-    reporterName: 'خالد ناصر',
-    reporterPhone: '+970 597 111 999',
-    storeName: 'متجر الأناقة',
-    storeLocation: 'خان يونس - البلد',
-    storyTitle: 'تخفيضات 50% على تشكيلة الصيف',
-    reason: 'عرض وهمي / منتهي',
-    date: '2026/08/25',
-    time: '09:00 مساءً',
-  },
-];
+const formatReportDate = (value) => new Intl.DateTimeFormat('en-CA', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+}).format(new Date(value)).replace(/-/g, '/');
+
+const formatReportTime = (value) => new Intl.DateTimeFormat('ar-EG', {
+  hour: '2-digit',
+  minute: '2-digit',
+}).format(new Date(value));
 
 export default function Reports() {
-  const [reports, setReports] = useState(defaultReports);
+  const [reports, setReports] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedReason, setSelectedReason] = useState('ALL');
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+  const [deletingReportId, setDeletingReportId] = useState(null);
 
-  // جلب البلاغات من السيرفر عند التوفر
+  // جلب بلاغات قاعدة البيانات
   useEffect(() => {
+    let isMounted = true;
+
     const fetchReports = async () => {
       try {
         const response = await API.get('/admin/reports');
-        if (response.data && response.data.length > 0) {
-          setReports(response.data);
+        if (!Array.isArray(response.data)) {
+          throw new Error('استجابة البلاغات ليست قائمة صالحة');
         }
-      } catch (err) {
-        console.log('استخدام بيانات البلاغات الافتراضية');
+        if (isMounted) setReports(response.data);
+      } catch (error) {
+        console.error('فشل في جلب البلاغات:', error);
+        if (isMounted) setLoadError('تعذر جلب البلاغات من الخادم. تحقق من اتصال الخادم ثم أعد تحميل الصفحة.');
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
+
     fetchReports();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // دالة حذف/تجاهل البلاغ من قِبَل الأدمن
   const handleDeleteReport = async (id) => {
     if (window.confirm('هل أنت متأكد من حذف هذا البلاغ وإزالته من القائمة؟')) {
+      setDeletingReportId(id);
+      setDeleteError('');
       try {
         await API.delete(`/admin/reports/${id}`);
-      } catch (err) {
-        console.log('حذف محلي للبلاغ');
+        setReports((currentReports) => currentReports.filter((report) => report.id !== id));
+      } catch (error) {
+        console.error('فشل في حذف البلاغ:', error);
+        setDeleteError('تعذر حذف البلاغ من قاعدة البيانات. لم يتم حذفه من القائمة.');
+      } finally {
+        setDeletingReportId(null);
       }
-      setReports(reports.filter((report) => report.id !== id));
     }
   };
 
@@ -97,6 +90,12 @@ export default function Reports() {
           مراجعة البلاغات والشكاوى الواردة من الزبائن حول العروض والـ Stories
         </p>
       </div>
+
+      {(loadError || deleteError) && (
+        <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {loadError || deleteError}
+        </div>
+      )}
 
       {/* شريط الفلترة وإجمالي البلاغات */}
       <div className="bg-brand-card p-4 rounded-2xl border border-brand-border flex flex-wrap items-center justify-between gap-3 shadow-xs">
@@ -150,10 +149,16 @@ export default function Reports() {
               </tr>
             </thead>
             <tbody className="divide-y divide-brand-border">
-              {filteredReports.length === 0 ? (
+              {isLoading ? (
                 <tr>
                   <td colSpan="6" className="text-center py-12 text-brand-body/50">
-                    لا توجد بلاغات مسجلة حالياً.
+                    جارٍ تحميل البلاغات...
+                  </td>
+                </tr>
+              ) : filteredReports.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-12 text-brand-body/50">
+                    {loadError ? 'تعذر تحميل البلاغات.' : 'لا توجد بلاغات مسجلة حالياً.'}
                   </td>
                 </tr>
               ) : (
@@ -185,14 +190,19 @@ export default function Reports() {
 
                     {/* التاريخ والوقت */}
                     <td className="p-4">
-                      <div className="font-bold text-brand-primary">{report.date}</div>
-                      <div className="text-[11px] text-brand-body/60">{report.time}</div>
+                      <div className="font-bold text-brand-primary">
+                        {report.createdAt ? formatReportDate(report.createdAt) : ''}
+                      </div>
+                      <div className="text-[11px] text-brand-body/60">
+                        {report.createdAt ? formatReportTime(report.createdAt) : ''}
+                      </div>
                     </td>
 
                     {/* إجراءات الأدمن */}
                     <td className="p-4 text-center">
                       <button
                         onClick={() => handleDeleteReport(report.id)}
+                        disabled={deletingReportId === report.id}
                         className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition border border-transparent hover:border-rose-100 cursor-pointer"
                         title="حذف البلاغ"
                       >
