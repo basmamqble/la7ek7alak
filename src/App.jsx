@@ -85,6 +85,7 @@ function App() {
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/subscriptions" element={<Subscriptions />} />
             <Route path="/ads" element={<AdsManagement />} />
+            <Route path="/verifications" element={<Verifications />} />
             <Route path="/Verifications" element={<Verifications />} />
           </Route>
         </Route>
